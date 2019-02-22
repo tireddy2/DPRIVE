@@ -33,7 +33,6 @@ author:
 - ins: D. Wing
   name: Dan Wing
   email: dan@danwing.org
-  country: USA
 
 - ins: M. Richardson
   name: Michael Richardson
@@ -41,25 +40,25 @@ author:
   email: mcr+ietf@sandelman.ca
 
 normative:
-  RFC.3315:
-  RFC.6125:
-  RFC.2132:
-  RFC.7030:
-  RFC.8295:
-  RFC.5280:
-  RFC.7804:
-  RFC.8484:
-  RFC.7858:
-  RFC.8094:
-  RFC.3958:
-  RFC.6763:
+  RFC3315:
+  RFC6125:
+  RFC2132:
+  RFC7030:
+  RFC8295:
+  RFC5280:
+  RFC7804:
+  RFC8484:
+  RFC7858:
+  RFC8094:
+  RFC3958:
+  RFC6763:
   I-D.ietf-anima-bootstrapping-keyinfra:
 
 informative:
-  RFC.8310:
+  RFC8310:
   I-D.ietf-opsawg-mud:
   CDN:
-    title: End-User Mapping: Next Generation Request Routing for Content Delivery
+    title: "End-User Mapping: Next Generation Request Routing for Content Delivery"
     target: "https://conferences.sigcomm.org/sigcomm/2015/pdf/papers/p167.pdf"
     date: 2015
 
@@ -262,7 +261,7 @@ name.  The format of this option is shown in Figure 1.
 
 The fields of the option shown in Figure 1 are as follows:
 
-o  Option-code: OPTION_V6_AUTH_DOMAIN (TBA1, see Section 7.1)
+o  Option-code: OPTION\_V6\_AUTH\_DOMAIN (TBA1, see Section 7.1)
 o  Option-length: Length of the authentication-domain-name field in octets.
 o  authentication-domain-name: A fully qualified domain name of the
       DNS server.  This field is formatted as specified in Section 8 of
@@ -270,14 +269,14 @@ o  authentication-domain-name: A fully qualified domain name of the
 
 ### DHCPv6 Client Behavior
 
-DHCP clients MAY request options OPTION_V6_AUTH_DOMAIN as defined in
+DHCP clients MAY request options OPTION\_V6\_AUTH\_DOMAIN as defined in
 [RFC3315], Sections 17.1.1, 18.1.1, 18.1.3, 18.1.4, 18.1.5, and 22.7.
 As a convenience to the reader, it is mentioned here that the DHCP
 client includes the requested option code in the Option Request
 Option.
 
 If the DHCP client receives more than one instance of
-OPTION_V6_AUTH_DOMAIN option, it MUST use only the first instance of
+OPTION\_V6\_AUTH\_DOMAIN option, it MUST use only the first instance of
 that option.
 
 ## DHCPv4 DNS Options
@@ -300,7 +299,7 @@ name.  The format of this option is illustrated in Figure 2.
 
 The fields of the option shown in Figure 2 are as follows:
 
-o  Code: OPTION_V4_AUTH_DOMAIN (TBA2, see Section 7.2);
+o  Code: OPTION\_V4\_AUTH\_DOMAIN (TBA2, see Section 7.2);
 o  Length: Includes the length of the authentication domain name
       field in octets; the maximum length is 255 octets.
 o  Authentication domain name: The domain name of the DNS server.
@@ -309,12 +308,12 @@ o  Authentication domain name: The domain name of the DNS server.
 ### DHCPv4 Client Behavior
 
 To discover a authentication domain name, the DHCPv4 client MUST
-include OPTION_V4_AUTH_DOMAIN in a Parameter Request List Option
+include OPTION\_V4\_AUTH\_DOMAIN in a Parameter Request List Option
 [RFC2132].
 
 If the DHCP client receives more than one instance of
-OPTION_V4_AUTH_DOMAIN option, it MUST use only the first instance of
-that option.  The content of OPTION_V4_AUTH_DOMAIN is used as
+OPTION\_V4\_AUTH\_DOMAIN option, it MUST use only the first instance of
+that option.  The content of OPTION\_V4\_AUTH\_DOMAIN is used as
 reference identifier for authentication purposes.
 
 # Resolution
@@ -381,32 +380,34 @@ parameters/s-naptr-parameters.xhtml.
 o  Application Protocol Tag: DPRIVE
 o  Intended Usage: See Section 5
 o  Security Considerations: See Section 6
-o  Contact Information: <one of the authors>
+o  Contact Information: *one of the authors*
 
 ### dns.tls Application Protocol Tag Registration
 
 o  Application Protocol Tag: dns.tls
 o  Intended Usage: See Section 5
 o  Security Considerations: See Section 6
-o  Contact Information: <one of the authors>
+o  Contact Information: *one of the authors*
 
 ###  dns.dtls Application Protocol Tag Registration
 
 o  Application Protocol Tag: dns.dtls
 o  Intended Usage: See Section 5
 o  Security Considerations: See Section 6
-o  Contact Information: <one of the authors>
+o  Contact Information: *one of the authors*
 
 ###  dns.https Application Protocol Tag Registration
 
 o  Application Protocol Tag: dnshttps
 o  Intended Usage: See Section 5
 o  Security Considerations: See Section 6
-o  Contact Information: <one of the authors>
+o  Contact Information: *one of the authors*
 
 # Acknowledgements
 
 # Changelog
+
+
 
 --- back
 
