@@ -1,0 +1,413 @@
+---
+title: Bootstrapping to discover and authenticate DNS-over-(D)TLS and DNS-over-HTTPS servers
+abbrev: DoT/DoH server discovery
+docname: draft-reddy-dprive-bootstrap-dns-server-00
+
+# stand_alone: true
+
+ipr: trust200902
+area: Internet
+wg: dprive Working Group
+kw: Internet-Draft
+cat: std
+date: 2019-02
+
+coding: us-ascii
+pi:    # can use array (if all yes) or hash here
+  toc: yes
+  sortrefs:   # defaults to yes
+  symrefs: yes
+
+author:
+
+- ins: T. Reddy
+  name: Tirumaleswar Reddy
+  email: TirumaleswarReddy_Konda@McAfee.com
+  org: McAfee, Inc.
+  street: Embassy Golf Link Business Park
+  city: Bangalore
+  region: Karnataka
+  code: 560071
+  country: India
+
+- ins: D. Wing
+  name: Dan Wing
+  email: dan@danwing.org
+
+- ins: M. Richardson
+  name: Michael Richardson
+  org: Sandelman Software Works
+  email: mcr+ietf@sandelman.ca
+
+normative:
+  RFC3315:
+  RFC6125:
+  RFC2132:
+  RFC7030:
+  RFC8295:
+  RFC5280:
+  RFC7804:
+  RFC8484:
+  RFC7858:
+  RFC8094:
+  RFC3958:
+  RFC6763:
+  I-D.ietf-anima-bootstrapping-keyinfra:
+
+informative:
+  RFC8310:
+  I-D.ietf-opsawg-mud:
+  CDN:
+    title: "End-User Mapping: Next Generation Request Routing for Content Delivery"
+    target: "https://conferences.sigcomm.org/sigcomm/2015/pdf/papers/p167.pdf"
+    date: 2015
+
+--- abstract
+
+This document explains mechanisms to automatically bootstrap
+endpoints to discover and authenticate DNS-over-(D)TLS and
+DNS-over-HTTPS servers provided by the local network.
+
+--- middle
+
+# Introduction
+
+Various network security services are provided by Enterprise, secure
+home and wall-gardened networks to protect endpoints, some of these
+security services act on DNS requests from endpoints.  However, if
+the endpoints are configured to use public DNS-over-(D)TLS {{RFC7858}}
+{{RFC8094}} or DNS-over-HTTPS {{RFC8484}} servers, network security
+services in the local network cannot act on DNS requests from the
+endpoints.  In order to act on DNS requests from endpoints, network
+security services can block DNS-over-(D)TLS traffic by dropping
+outgoing packets to destination port 853, and by identifying the
+domains offering DNS-over-HTTPS servers, DNS-over-(D)TLS traffic is
+blocked by dropping outgoing packets to these domains.  If the
+endpoint has enabled strict privacy profile (Section 5 of {{RFC8310}}),
+and the network security service blocks the traffic to the public DNS
+server, DNS service is not available to the endpoint and ultimately
+the endpoint cannot access Internet.  If the endpoint has enabled
+opportunistic privacy profile (Section 5 of {{RFC8310}}), and the
+network security service blocks traffic to the public DNS server, the
+endpoint will either fallback to an encrypted connection without
+authenticating the DNS-over-(D)TLS and DNS-over-HTTPS servers
+provided by the local network or fallback to clear text DNS, and
+cannot exchange encrypted DNS messages.  This can compromise the
+endpoint security and privacy, some of the possible security threats
+are listed below:
+
+*  Pervasive monitoring of DNS traffic.
+
+*  If IoT devices are configured to use public DNS-over-(D)TLS or
+   DNS-over-HTTPS servers, and if a policy enforcement point in the
+   local network is programmed using a Manufacturer Usage Description
+   (MUD) file {{I-D.ietf-opsawg-mud}} by the MUD manager to only allow
+   intented communications to and from the IoT devices, the policy
+   enforcement point cannot enforce the Network Access Control List
+   rules based on domain names (Section 8 of {{I-D.ietf-opsawg-mud}}).
+
+*  The network security service cannot block the endpoint from
+   accessing malicious domains.  Attacks like DNS cache poisoning can
+   lead the user to visit malicious website to inject malware on the
+   endpoint.  For instance, malwares like DNSChanger can modify the
+   endpoint's DNS entries to point toward its own rogue name servers
+   which then injected its own advertising into Web pages.
+
+The working groups DPRIVE and DoH have not defined a automated
+mechanism to securely bootstrap the endpoints to discover and
+authenticate DNS-over-(D)TLS and DNS-over-HTTPS servers in the local
+network.  Some clients have hard-coded specific public DNS servers
+(such as Mozilla using Cloudflare's DNS-over-HTTPS server).  If
+endpoints continue to use hard-coded public DNS servers, this has a
+risk of relying on few centralized DNS services.  Further, Content
+Delivery Networks (CDNs) that map traffic based on DNS may lose the
+ability to direct end-user traffic to a nearby cluster in cases where
+a DNS service is being used that is not affiliated with the local
+network and which does not send "EDNS Client Subnet" (ECS)
+information to the CDN's DNS authorities ({{CDN}}).
+
+The draft proposes a mechanism to automatically bootstrap the
+endpoints to discover and authenticate the DNS-over-(D)TLS and DNS-
+over-HTTPS servers provided by the local network.
+
+# Solution overview
+
+The following steps discuss the mechanism to automatically bootstrap
+IoT devices with local network's CA certificates and DNS server
+certificate.
+
+The IoT device can use Bootstrapping Remote Secure Key
+Infrastructures (BRSKI) discussed in
+{{I-D.ietf-anima-bootstrapping-keyinfra}} to automatically bootstrap
+the IoT device using the IoT manufacturer provisioned X.509
+certificate, in combination with a registrar provided by the local
+network and IoT device manufacturer's authorizing service (MASA).
+
+1.  The IoT device authenticates to the local network using the
+    IoT manufacturer provisioned X.509 certificate.  The IoT
+    device can request and get a voucher from the MASA service via
+    the registrar.  The voucher is signed by the MASA service and
+    includes the local network's CA public key.
+
+2.  The IoT device validates the signed voucher using the
+    manufacturer installed trust anchor associated with the MASA,
+    stores the CA's public key and validates the provisional TLS
+    connection to the registrar.
+
+3.  The IoT device requests the full Enrollment over Secure
+    Transport (EST) {{RFC7030}} distribution of current CA
+    certificates (Section 5.9.1 in
+    {{I-D.ietf-anima-bootstrapping-keyinfra}}) from the registrar
+    operating as a BRSKI-EST server.  The IoT device uses the
+    Explicit Trust Anchor database to authenticate the DNS server
+    offered by the local network.
+
+4.  TBD: The IoT device learns the End-Entity certificates
+    {{RFC8295}} from the BRSKI-EST server.  The certificate
+    provisioned to the DNS server in the local network will be
+    treated as a End-Entity certificate.  The key usage extension
+    {{RFC5280}} can be used to restrict the use of the DNS server
+    certificate to authenticate the DNS server, a new bit will be
+    added to the KeyUsage type to identify the DNS server
+    certificate.
+
+The above steps can also be used by broadband gateways acting as DNS
+forwarders to discover and authenticate DNS-over-(D)TLS and DNS-over-
+HTTPS servers provided by the access networks.
+
+The following steps explain the mechanism to automatically bootstrap
+endpoint with the local network's CA certificates and DNS server
+certificate.
+
+1.  The endpoint authenticates to the local network and establishes
+    provisional TLS connection with the registrar operating as the
+    BRSKI-EST server.  The endpoint discovers registrar using DNS-
+    based Service Discovery {{RFC6763}}.
+
+2.  The endpoint uses Salted Challenge Response Authentication
+    Mechanism (SCRAM) {{RFC7804}} to perform mutual authentication with
+    the discovered BRSKI-EST server.
+
+3.  If the BRSKI-EST server authentication is successful, the
+    endpoint requests the full EST distribution of current CA
+    certificates and validates the provisional TLS connection to the
+    BRSKI-EST server.  If the BRSKI-EST server certificate cannot be
+    verified using the CA certifates downloaded, the TLS connection
+    is immediately discarded and the endpoint abandons the attempt to
+    bootstrap from the BRSKI-EST server and discards the CA
+    certificates conveyed by the EST server.  The endpoint uses the
+    Explicit Trust Anchor database to authenticate the DNS server
+    offered by the local network.
+
+4.  TBD: The endpoint learns the End-Entity certificates {{RFC8295}}
+    from the BRSKI-EST server.  The certificate provisioned to the
+    DNS server in the local network will be treated as a End-Entity
+    certificate.  The key usage extension can be used to restrict the
+    use of the DNS server certificate to authenticate the DNS server,
+    a new bit will be added to the KeyUsage type to identify the DNS
+    server certificate.
+
+# Discovery procedure
+
+A DNS client can discover the DNS server in the local network
+supporting DNS-over-TLS, DNS-over-DTLS and DNS-over-HTTPS protocols
+by using the following discovery mechanism:
+
+o  The DNS client uses DHCP to discover the authentication domain
+   name for the DNS server, as specified in Section 4.
+
+o  The DNS client then use S-NAPTR {{RFC3958}} lookup to learn the
+   protocols DNS-over-TLS, DNS-over-DTLS and DNS-over-HTTPS supported
+   by the DNS server and the DNS privacy protocol preferred by the
+   DNS server administrators, as specified in Section 7.3.1.
+
+o  The DNS client initiates (D)TLS handshake with the DNS server, the
+   server present its certificate and the client validates the server
+   certificate using the Explicit Trust Anchor database.
+
+# DHCP Options for DNS server discovery
+
+As reported in Section 1.7.2 of {{RFC6125}}:
+
+      "few certification authorities issue server certificates based on
+      IP addresses, but preliminary evidence indicates that such
+      certificates are a very small percentage (less than 1%) of issued
+      certificates".
+
+In order to allow for certifcate authentication between a DNS client
+and server while accommodating for the current best practices for
+issuing certificates, this document allows for configuring
+authentication domain name to clients.  This name can be used as a
+reference identifier for authentication purposes.
+
+## DHCPv6 DNS Options
+
+### Format of DNS Reference Identifier Option
+
+The DHCPv6 DNS option is used to configure a authentication domain
+name.  The format of this option is shown in Figure 1.
+
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |     OPTION_V6_AUTH_DOMAIN     |         Option-length         |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                                                               |
+      |            authentication-domain-name (FQDN)                  |
+      |                                                               |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+             Figure 1: DHCPv6 DNS Reference Identifier option
+
+The fields of the option shown in Figure 1 are as follows:
+
+o  Option-code: OPTION\_V6\_AUTH\_DOMAIN (TBA1, see Section 7.1)
+o  Option-length: Length of the authentication-domain-name field in octets.
+o  authentication-domain-name: A fully qualified domain name of the
+      DNS server.  This field is formatted as specified in Section 8 of
+      {{RFC3315}}.
+
+### DHCPv6 Client Behavior
+
+DHCP clients MAY request options OPTION\_V6\_AUTH\_DOMAIN as defined in
+{{RFC3315}}, Sections 17.1.1, 18.1.1, 18.1.3, 18.1.4, 18.1.5, and 22.7.
+As a convenience to the reader, it is mentioned here that the DHCP
+client includes the requested option code in the Option Request
+Option.
+
+If the DHCP client receives more than one instance of
+OPTION\_V6\_AUTH\_DOMAIN option, it MUST use only the first instance of
+that option.
+
+## DHCPv4 DNS Options
+
+### Format of DNS Reference Identifier Option
+
+The DHCPv4 DNS option is used to configure a authentication domain
+name.  The format of this option is illustrated in Figure 2.
+
+            Code  Length   authentication domain name
+           +-----+-----+-----+-----+-----+-----+-----+--
+           |TBA2 |  n  |  s1 |  s2 |  s3 |  s4 | s5  |  ...
+           +-----+-----+-----+-----+-----+-----+-----+--
+
+     The values s1, s2, s3, etc. represent the domain name labels in the
+     domain name encoding.
+
+
+             Figure 2: DHCPv4 DNS Reference Identifier option
+
+The fields of the option shown in Figure 2 are as follows:
+
+o  Code: OPTION\_V4\_AUTH\_DOMAIN (TBA2, see Section 7.2);
+o  Length: Includes the length of the authentication domain name
+      field in octets; the maximum length is 255 octets.
+o  Authentication domain name: The domain name of the DNS server.
+      This field is formatted as specified in Section 8 of {{RFC3315}}.
+
+### DHCPv4 Client Behavior
+
+To discover a authentication domain name, the DHCPv4 client MUST
+include OPTION\_V4\_AUTH\_DOMAIN in a Parameter Request List Option
+{{RFC2132}}.
+
+If the DHCP client receives more than one instance of
+OPTION\_V4\_AUTH\_DOMAIN option, it MUST use only the first instance of
+that option.  The content of OPTION\_V4\_AUTH\_DOMAIN is used as
+reference identifier for authentication purposes.
+
+# Resolution
+
+Once the DNS client has retrieved the authentication domain name for
+the DNS server, an S-NAPTR lookup with 'DPRIVE' application service
+and the desired protocol tag is made to obtain information necessary
+to securely connect to the DNS server.
+
+This specification defines "DPRIVE" as an application service tag
+(Section 7.3.1) and "dns.tls" (Section 7.3.2), "dns.dtls"
+(Section 7.3.3), and "dns.https" (Section 7.3.4) as application
+protocol tags.
+
+If no DNS-specific S-NAPTR records can be retrieved, the discovery
+procedure fails for this authentication domain name.  However, before
+retrying a lookup that has failed, a DNS client MUST wait a time
+period that is appropriate for the encountered error (e.g., NXDOMAIN,
+timeout, etc.).
+
+# Security Considerations
+
+The primary attack against the methods described in Section 3 is one
+that would lead to impersonation of a DNS server.  An attacker could
+attempt to compromise the DHCP discovery and S-NAPTR resolution.  The
+attack is prevented by validating the certificate presented by the
+DNS server.
+
+Security considerations in {{I-D.ietf-anima-bootstrapping-keyinfra}}
+and {{RFC7804}} need to be taken into consideration.
+
+#  IANA Considerations
+
+##  DHCPv6 Option
+
+IANA is requested to assign the following new DHCPv6 Option Code in
+the registry maintained in http://www.iana.org/assignments/
+ dhcpv6-parameters:
+
+                                  Option Name Value
+                        --------------------- -----
+                        OPTION_V6_AUTH_DOMAIN TBA1
+
+## DHCPv4 Option
+
+IANA is requested to assign the following new DHCPv4 Option Code in
+the registry maintained in http://www.iana.org/assignments/bootp-
+dhcp-parameters/:
+
+              Option Name Value Data length          Meaning
+    --------------------- ----- -------------------- --------------------
+    OPTION_V4_AUTH_DOMAIN TBA2  Variable; the        Includes the
+                                maximum length is    authentication
+                                255 octets.          domain name.
+
+## Application Service & Application Protocol Tags
+
+This document requests IANA to make the following allocations from
+the registry available at: https://www.iana.org/assignments/s-naptr-
+parameters/s-naptr-parameters.xhtml.
+
+###  DNS Application Service Tag Registration
+
+o  Application Protocol Tag: DPRIVE
+o  Intended Usage: See Section 5
+o  Security Considerations: See Section 6
+o  Contact Information: *one of the authors*
+
+### dns.tls Application Protocol Tag Registration
+
+o  Application Protocol Tag: dns.tls
+o  Intended Usage: See Section 5
+o  Security Considerations: See Section 6
+o  Contact Information: *one of the authors*
+
+###  dns.dtls Application Protocol Tag Registration
+
+o  Application Protocol Tag: dns.dtls
+o  Intended Usage: See Section 5
+o  Security Considerations: See Section 6
+o  Contact Information: *one of the authors*
+
+###  dns.https Application Protocol Tag Registration
+
+o  Application Protocol Tag: dnshttps
+o  Intended Usage: See Section 5
+o  Security Considerations: See Section 6
+o  Contact Information: *one of the authors*
+
+# Acknowledgements
+
+# Changelog
+
+
+
+--- back
+
