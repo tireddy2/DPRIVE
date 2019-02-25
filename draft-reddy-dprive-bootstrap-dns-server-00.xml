@@ -50,6 +50,21 @@
       </address>
     </author>
 
+    <author fullname="Michael C. Richardson" initials="M."
+            surname="Richardson">
+      <organization>Sandelman Software Works</organization>
+
+      <address>
+        <postal>
+          <street></street>
+
+          <country>USA</country>
+        </postal>
+
+        <email>mcr+ietf@sandelman.ca</email>
+      </address>
+    </author>
+
     <date day="21" month="February" year="2019" />
 
     <workgroup>DPRIVE WG</workgroup>
@@ -118,17 +133,21 @@
       direct end-user traffic to a nearby cluster in cases where a DNS service
       is being used that is not affiliated with the local network and which
       does not send "EDNS Client Subnet" (ECS) information to the CDN's DNS
-      authorities (<xref target="CDN"></xref>).</t>
+      authorities <xref target="CDN"></xref>.</t>
 
       <t>The draft proposes a mechanism to automatically bootstrap the
       endpoints to discover and authenticate the DNS-over-(D)TLS and
       DNS-over-HTTPS servers provided by the local network.</t>
     </section>
 
-    <section anchor="solution" title="Solution overview">
+    <section anchor="bootstrap-iot"
+             title="Bootstrapping IoT devices and broadband gateways">
       <t>The following steps discuss the mechanism to automatically bootstrap
       IoT devices with local network's CA certificates and DNS server
-      certificate. <list style="symbols">
+      certificate. The above steps can also be used by broadband gateways
+      acting as DNS forwarders to discover and authenticate DNS-over-(D)TLS
+      and DNS-over-HTTPS servers provided by the access networks.<list
+          style="symbols">
           <t>The IoT device can use Bootstrapping Remote Secure Key
           Infrastructures (BRSKI) discussed in <xref
           target="I-D.ietf-anima-bootstrapping-keyinfra"></xref> to
@@ -158,25 +177,26 @@
               <t>TBD: The IoT device learns the End-Entity certificates <xref
               target="RFC8295"></xref> from the BRSKI-EST server. The
               certificate provisioned to the DNS server in the local network
-              will be treated as a End-Entity certificate. The key usage
-              extension <xref target="RFC5280"></xref> can be used to restrict
-              the use of the DNS server certificate to authenticate the DNS
-              server, a new bit will be added to the KeyUsage type to identify
-              the DNS server certificate.</t>
+              will be treated as a End-Entity certificate. The IoT device
+              needs to identify the End-Entity certificate is provisioned to
+              the DNS server, the key usage extension <xref
+              target="RFC5280"></xref> can be used to restrict the use of the
+              End-Entity certificate to authenticate the DNS server, a new bit
+              will be added to the KeyUsage type to identify the DNS server
+              certificate.</t>
             </list></t>
         </list></t>
+    </section>
 
-      <t>The above steps can also be used by broadband gateways acting as DNS
-      forwarders to discover and authenticate DNS-over-(D)TLS and
-      DNS-over-HTTPS servers provided by the access networks.</t>
-
+    <section anchor="bootstrap-endpoint"
+             title="Bootstrapping endpoint devices">
       <t>The following steps explain the mechanism to automatically bootstrap
       endpoint with the local network's CA certificates and DNS server
       certificate. <list style="numbers">
           <t>The endpoint authenticates to the local network and establishes
           provisional TLS connection with the registrar operating as the
           BRSKI-EST server. The endpoint discovers registrar using DNS-based
-          Service Discovery <xref target="RFC6763"></xref>. </t>
+          Service Discovery <xref target="RFC6763"></xref>.</t>
 
           <t>The endpoint uses Salted Challenge Response Authentication
           Mechanism (SCRAM) <xref target="RFC7804"></xref> to perform mutual
@@ -191,15 +211,17 @@
           bootstrap from the BRSKI-EST server and discards the CA certificates
           conveyed by the EST server. The endpoint uses the Explicit Trust
           Anchor database to authenticate the DNS server offered by the local
-          network. </t>
+          network.</t>
 
           <t>TBD: The endpoint learns the End-Entity certificates <xref
           target="RFC8295"></xref> from the BRSKI-EST server. The certificate
           provisioned to the DNS server in the local network will be treated
-          as a End-Entity certificate. The key usage extension can be used to
-          restrict the use of the DNS server certificate to authenticate the
+          as a End-Entity certificate. The endpoint needs to identify the
+          End-Entity certificate is provisioned to the DNS server, the key
+          usage extension <xref target="RFC5280"></xref> can be used to
+          restrict the use of the End-Entity certificate to authenticate the
           DNS server, a new bit will be added to the KeyUsage type to identify
-          the DNS server certificate. </t>
+          the DNS server certificate.</t>
         </list></t>
     </section>
 
@@ -221,7 +243,7 @@
 
           <t>The DNS client initiates (D)TLS handshake with the DNS server,
           the server present its certificate and the client validates the
-          server certificate using the Explicit Trust Anchor database. </t>
+          server certificate using the Explicit Trust Anchor database.</t>
         </list></t>
     </section>
 
@@ -359,7 +381,7 @@
       target="discovery"></xref> is one that would lead to impersonation of a
       DNS server. An attacker could attempt to compromise the DHCP discovery
       and S-NAPTR resolution. The attack is prevented by validating the
-      certificate presented by the DNS server. </t>
+      certificate presented by the DNS server.</t>
 
       <t>Security considerations in <xref
       target="I-D.ietf-anima-bootstrapping-keyinfra"></xref> and <xref
