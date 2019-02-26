@@ -243,7 +243,9 @@
 
           <t>The DNS client initiates (D)TLS handshake with the DNS server,
           the server present its certificate and the client validates the
-          server certificate using the Explicit Trust Anchor database.</t>
+          server certificate using the End-Entity certificate and Explicit
+          Trust Anchor database downloaded in steps 3 and 4 in <xref
+          target="bootstrap-iot"></xref>.</t>
         </list></t>
     </section>
 
