@@ -88,19 +88,20 @@
       endpoints. In order to act on DNS requests from endpoints, network
       security services can block DNS-over-(D)TLS traffic by dropping outgoing
       packets to destination port 853, and by identifying the domains offering
-      DNS-over-HTTPS servers, DNS-over-(D)TLS traffic is blocked by dropping
-      outgoing packets to these domains. If the endpoint has enabled strict
-      privacy profile (Section 5 of <xref target="RFC8310"></xref>), and the
-      network security service blocks the traffic to the public DNS server,
-      DNS service is not available to the endpoint and ultimately the endpoint
-      cannot access Internet. If the endpoint has enabled opportunistic
-      privacy profile (Section 5 of <xref target="RFC8310"></xref>), and the
-      network security service blocks traffic to the public DNS server, the
-      endpoint will either fallback to an encrypted connection without
-      authenticating the DNS-over-(D)TLS and DNS-over-HTTPS servers provided
-      by the local network or fallback to clear text DNS, and cannot exchange
-      encrypted DNS messages. This can compromise the endpoint security and
-      privacy, some of the possible security threats are listed below:</t>
+      DNS-over-HTTPS servers, DNS-over-HTTPS traffic can be blocked by
+      dropping outgoing packets to these domains. If the endpoint has enabled
+      strict privacy profile (Section 5 of <xref target="RFC8310"></xref>),
+      and the network security service blocks the traffic to the public DNS
+      server, DNS service is not available to the endpoint and ultimately the
+      endpoint cannot access Internet. If the endpoint has enabled
+      opportunistic privacy profile (Section 5 of <xref
+      target="RFC8310"></xref>), and the network security service blocks
+      traffic to the public DNS server, the endpoint will either fallback to
+      an encrypted connection without authenticating the DNS-over-(D)TLS and
+      DNS-over-HTTPS servers provided by the local network or fallback to
+      clear text DNS, and cannot exchange encrypted DNS messages. This can
+      compromise the endpoint security and privacy, some of the possible
+      security threats are listed below:</t>
 
       <t><list style="symbols">
           <t>Pervasive monitoring of DNS traffic.</t>
@@ -171,8 +172,8 @@
               current CA certificates (Section 5.9.1 in <xref
               target="I-D.ietf-anima-bootstrapping-keyinfra"></xref>) from the
               registrar operating as a BRSKI-EST server. The IoT device uses
-              the Explicit Trust Anchor database to authenticate the DNS
-              server offered by the local network.</t>
+              the Explicit Trust Anchor database to validate the DNS server
+              certificate.</t>
 
               <t>TBD: The IoT device learns the End-Entity certificates <xref
               target="RFC8295"></xref> from the BRSKI-EST server. The
@@ -209,9 +210,8 @@
           verified using the CA certifates downloaded, the TLS connection is
           immediately discarded and the endpoint abandons the attempt to
           bootstrap from the BRSKI-EST server and discards the CA certificates
-          conveyed by the EST server. The endpoint uses the Explicit Trust
-          Anchor database to authenticate the DNS server offered by the local
-          network.</t>
+          conveyed by the BRSKI-EST server. The endpoint uses the Explicit
+          Trust Anchor database to validate the DNS server certificate.</t>
 
           <t>TBD: The endpoint learns the End-Entity certificates <xref
           target="RFC8295"></xref> from the BRSKI-EST server. The certificate
