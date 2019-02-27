@@ -13,8 +13,9 @@
 <rfc category="std" docName="draft-reddy-dprive-bootstrap-dns-server-00"
      ipr="trust200902">
   <front>
-    <title abbrev="DoT/DoH server discovery">Bootstrapping to discover and
-    authenticate DNS-over-(D)TLS and DNS-over-HTTPS servers</title>
+    <title abbrev="DoT/DoH server discovery">A Bootstrapping Procedure to
+    Discover and Authenticate DNS-over-(D)TLS and DNS-over-HTTPS
+    Servers</title>
 
     <author fullname="Tirumaleswar Reddy" initials="T." surname="Reddy">
       <organization abbrev="McAfee">McAfee, Inc.</organization>
@@ -65,29 +66,51 @@
       </address>
     </author>
 
+    <author fullname="Mohamed Boucadair" initials="M." surname="Boucadair">
+      <organization>Orange</organization>
+
+      <address>
+        <postal>
+          <street></street>
+
+          <city>Rennes</city>
+
+          <region></region>
+
+          <code>35000</code>
+
+          <country>France</country>
+        </postal>
+
+        <email>mohamed.boucadair@orange.com</email>
+      </address>
+    </author>
+
     <date day="21" month="February" year="2019" />
 
     <workgroup>DPRIVE WG</workgroup>
 
     <abstract>
-      <t>This document explains mechanisms to automatically bootstrap
-      endpoints to discover and authenticate DNS-over-(D)TLS and
-      DNS-over-HTTPS servers provided by the local network.</t>
+      <t>This document specifies mechanisms to automatically bootstrap
+      endpoints (e.g., hosts, Customer Equipment) to discover and authenticate
+      DNS-over-(D)TLS and DNS-over-HTTPS servers provided by a local
+      network.</t>
     </abstract>
   </front>
 
   <middle>
     <section title="Introduction">
       <t>Various network security services are provided by Enterprise, secure
-      home and wall-gardened networks to protect endpoints, some of these
-      security services act on DNS requests from endpoints. However, if the
-      endpoints are configured to use public DNS-over-(D)TLS <xref
-      target="RFC7858"></xref> <xref target="RFC8094"></xref> or
-      DNS-over-HTTPS <xref target="RFC8484"></xref> servers, network security
-      services in the local network cannot act on DNS requests from the
-      endpoints. In order to act on DNS requests from endpoints, network
-      security services can block DNS-over-(D)TLS traffic by dropping outgoing
-      packets to destination port 853, and by identifying the domains offering
+      home and wall-gardened networks to protect endpoints (e.g,. hosts, IoT
+      devices). Some of these security services act on DNS requests from
+      endpoints. However, if an endpoint is configured to use public
+      DNS-over-(D)TLS <xref target="RFC7858"></xref> <xref
+      target="RFC8094"></xref> or DNS-over-HTTPS <xref
+      target="RFC8484"></xref> servers, network security services in the local
+      network cannot act efficiently on DNS requests from the endpoints. In
+      order to act on DNS requests from endpoints, network security services
+      can block DNS-over-(D)TLS traffic by dropping outgoing packets to
+      destination port 853, and by identifying the domains offering
       DNS-over-HTTPS servers, DNS-over-HTTPS traffic can be blocked by
       dropping outgoing packets to these domains. If the endpoint has enabled
       strict privacy profile (Section 5 of <xref target="RFC8310"></xref>),
@@ -100,22 +123,23 @@
       an encrypted connection without authenticating the DNS-over-(D)TLS and
       DNS-over-HTTPS servers provided by the local network or fallback to
       clear text DNS, and cannot exchange encrypted DNS messages. This can
-      compromise the endpoint security and privacy, some of the possible
+      compromise the endpoint security and privacy; some of the potential
       security threats are listed below:</t>
 
       <t><list style="symbols">
           <t>Pervasive monitoring of DNS traffic.</t>
 
-          <t>If IoT devices are configured to use public DNS-over-(D)TLS or
-          DNS-over-HTTPS servers, and if a policy enforcement point in the
-          local network is programmed using a Manufacturer Usage Description
-          (MUD) file <xref target="I-D.ietf-opsawg-mud"></xref> by the MUD
-          manager to only allow intented communications to and from the IoT
-          devices, the policy enforcement point cannot enforce the Network
-          Access Control List rules based on domain names (Section 8 of <xref
+          <t>If the endpoint is an IoT device which is configured to use
+          public DNS-over-(D)TLS or DNS-over-HTTPS servers, and if a policy
+          enforcement point in the local network is programmed using a
+          Manufacturer Usage Description (MUD) file <xref
+          target="I-D.ietf-opsawg-mud"></xref> by a MUD manager to only allow
+          intented communications to and from the IoT device, the policy
+          enforcement point cannot enforce the Network Access Control List
+          rules based on domain names (Section 8 of <xref
           target="I-D.ietf-opsawg-mud"></xref>).</t>
 
-          <t>The network security service cannot block the endpoint from
+          <t>The network security service cannot prevent an endpoint from
           accessing malicious domains. Attacks like DNS cache poisoning can
           lead the user to visit malicious website to inject malware on the
           endpoint. For instance, malwares like DNSChanger can modify the
@@ -123,7 +147,7 @@
           which then injected its own advertising into Web pages.</t>
         </list></t>
 
-      <t>The working groups DPRIVE and DoH have not defined a automated
+      <t>The DPRIVE and DoH working groups have not defined an automated
       mechanism to securely bootstrap the endpoints to discover and
       authenticate DNS-over-(D)TLS and DNS-over-HTTPS servers in the local
       network. Some clients have hard-coded specific public DNS servers (such
@@ -136,18 +160,47 @@
       does not send "EDNS Client Subnet" (ECS) information to the CDN's DNS
       authorities <xref target="CDN"></xref>.</t>
 
-      <t>The draft proposes a mechanism to automatically bootstrap the
+      <t>The document proposes a mechanism to automatically bootstrap the
       endpoints to discover and authenticate the DNS-over-(D)TLS and
-      DNS-over-HTTPS servers provided by the local network.</t>
+      DNS-over-HTTPS servers provided by the local network. The overall
+      procedure can be structured into the following steps:<list
+          style="symbols">
+          <t>Bootstrapping phase (<xref target="bootstrap-iot"></xref> and
+          <xref target="bootstrap-endpoint"> </xref>) is meant to
+          automatically to automatically bootstrap endpoints with local
+          network's CA certificates and DNS server certificate.</t>
+
+          <t>Discovery phase (<xref target="discovery"></xref>) is meant to
+          discover an authentication domain (defined in <xref
+          target="RFC8310"></xref>) to authenticate the privacy-enabling DNS
+          server, the privacy-enabling protocols supported by the DNS server
+          and usable DNS server IP addresses. </t>
+
+          <t>Connection handshake and service invocation: The DNS client
+          initiates (D)TLS handshake with the DNS server learned in the
+          discovery phase. Furthermore, DNS client uses the credentials
+          discovered during the bootstrapping phase to validate the server
+          certificate.</t>
+        </list></t>
+
+      <t>This document uses the terms defined in <xref
+      target="RFC8499"></xref>.</t>
     </section>
 
-    <section anchor="bootstrap-iot"
-             title="Bootstrapping IoT devices and broadband gateways">
+    <section title="Requirements Language">
+      <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+      "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+      "OPTIONAL" in this document are to be interpreted as described in BCP 14
+      <xref target="RFC2119"></xref><xref target="RFC8174"></xref> when, and
+      only when, they appear in all capitals, as shown here.</t>
+    </section>
+
+    <section anchor="bootstrap-iot" title="Bootstrapping IoT Devices and CPE">
       <t>The following steps discuss the mechanism to automatically bootstrap
       IoT devices with local network's CA certificates and DNS server
-      certificate. The above steps can also be used by broadband gateways
-      acting as DNS forwarders to discover and authenticate DNS-over-(D)TLS
-      and DNS-over-HTTPS servers provided by the access networks.<list
+      certificate. The below steps can also be used by CPE acting as DNS
+      forwarders to discover and authenticate DNS-over-(D)TLS and
+      DNS-over-HTTPS servers provided by the access networks.<list
           style="symbols">
           <t>The IoT device can use Bootstrapping Remote Secure Key
           Infrastructures (BRSKI) discussed in <xref
@@ -190,10 +243,10 @@
     </section>
 
     <section anchor="bootstrap-endpoint"
-             title="Bootstrapping endpoint devices">
+             title="Bootstrapping Endpoint Devices">
       <t>The following steps explain the mechanism to automatically bootstrap
-      endpoint with the local network's CA certificates and DNS server
-      certificate. <list style="numbers">
+      an endpoint with the local network's CA certificates and DNS server
+      certificate: <list style="numbers">
           <t>The endpoint authenticates to the local network and establishes
           provisional TLS connection with the registrar operating as the
           BRSKI-EST server. The endpoint discovers registrar using DNS-based
@@ -207,7 +260,7 @@
           endpoint requests the full EST distribution of current CA
           certificates and validates the provisional TLS connection to the
           BRSKI-EST server. If the BRSKI-EST server certificate cannot be
-          verified using the CA certifates downloaded, the TLS connection is
+          verified using the CA certificates downloaded, the TLS connection is
           immediately discarded and the endpoint abandons the attempt to
           bootstrap from the BRSKI-EST server and discards the CA certificates
           conveyed by the BRSKI-EST server. The endpoint uses the Explicit
@@ -225,54 +278,58 @@
         </list></t>
     </section>
 
-    <section anchor="discovery" title="Discovery procedure">
-      <t>A DNS client can discover the DNS server in the local network
-      supporting DNS-over-TLS, DNS-over-DTLS and DNS-over-HTTPS protocols by
-      using the following discovery mechanism:</t>
+    <section anchor="discovery" title="Discovery Procedure">
+      <t>A DNS client discovers the DNS server in the local network supporting
+      DNS-over-TLS, DNS-over-DTLS and DNS-over-HTTPS protocols by using the
+      following discovery mechanism:</t>
 
       <t><list style="symbols">
           <t>The DNS client uses DHCP to discover the authentication domain
           name for the DNS server, as specified in <xref
           target="dhcp"></xref>.</t>
 
-          <t>The DNS client then use S-NAPTR <xref target="RFC3958"></xref>
-          lookup to learn the protocols DNS-over-TLS, DNS-over-DTLS and
+          <t>The DNS client then uses S-NAPTR <xref target="RFC3958"></xref>
+          lookup to learn the protocols DNS-over-TLS, DNS-over-DTLS, and
           DNS-over-HTTPS supported by the DNS server and the DNS privacy
           protocol preferred by the DNS server administrators, as specified in
-          <xref target="serviceT"></xref>.</t>
+          <xref target="srvr"></xref> and <xref target="serviceT"> </xref>.
+          </t>
 
           <t>The DNS client initiates (D)TLS handshake with the DNS server,
-          the server present its certificate and the client validates the
+          the server presents its certificate and the client validates the
           server certificate using the End-Entity certificate and Explicit
           Trust Anchor database downloaded in steps 3 and 4 in <xref
-          target="bootstrap-iot"></xref>.</t>
-        </list></t>
-    </section>
-
-    <section anchor="dhcp" title="DHCP Options for DNS server discovery">
-      <t>As reported in Section 1.7.2 of <xref target="RFC6125"></xref>:<list
-          style="empty">
-          <t>"few certification authorities issue server certificates based on
-          IP addresses, but preliminary evidence indicates that such
-          certificates are a very small percentage (less than 1%) of issued
-          certificates".</t>
+          target="bootstrap-iot"></xref> and <xref
+          target="bootstrap-endpoint"></xref>. The DNS client uses validation
+          techniques as described in <xref target="RFC6125"></xref> to compare
+          the authentication domain name to the certificate provided by the
+          DNS server.</t>
         </list></t>
 
-      <t>In order to allow for certifcate authentication between a DNS client
-      and server while accommodating for the current best practices for
-      issuing certificates, this document allows for configuring
-      authentication domain name to clients. This name can be used as a
-      reference identifier for authentication purposes.</t>
+      <section anchor="dhcp" title="DNS Reference Identifier DHCP Options">
+        <t>As reported in Section 1.7.2 of <xref
+        target="RFC6125"></xref>:<list style="empty">
+            <t>"few certification authorities issue server certificates based
+            on IP addresses, but preliminary evidence indicates that such
+            certificates are a very small percentage (less than 1%) of issued
+            certificates".</t>
+          </list></t>
 
-      <section title="DHCPv6 DNS Options">
-        <section title="Format of DNS Reference Identifier Option">
-          <t>The DHCPv6 DNS option is used to configure a authentication
-          domain name. The format of this option is shown in <xref
-          target="ri_option1"></xref>.</t>
+        <t>In order to allow for certificate authentication between a DNS
+        client and server while accommodating for the current best practices
+        for issuing certificates, this document allows for configuring
+        authentication domain name to clients. This name can be used as a
+        reference identifier for authentication purposes.</t>
 
-          <t><figure anchor="ri_option1"
-              title="DHCPv6 DNS Reference Identifier option">
-              <artwork><![CDATA[    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+        <section title="DHCPv6 DNS Reference Identifier Option">
+          <section title="Option Format ">
+            <t>The DHCPv6 DNS Reference Identifier option is used to configure
+            an authentication domain name. The format of this option is shown
+            in <xref target="ri_option1"></xref>.</t>
+
+            <t><figure anchor="ri_option1"
+                title="DHCPv6 DNS Reference Identifier option">
+                <artwork><![CDATA[    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |     OPTION_V6_AUTH_DOMAIN     |         Option-length         |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -282,44 +339,44 @@
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 ]]></artwork>
-            </figure>The fields of the option shown in <xref
-          target="ri_option1"></xref> are as follows:<?rfc subcompact="yes" ?></t>
+              </figure>The fields of the option shown in <xref
+            target="ri_option1"></xref> are as follows:<?rfc subcompact="yes" ?></t>
 
-          <t><list style="symbols">
-              <t>Option-code: OPTION_V6_AUTH_DOMAIN (TBA1, see <xref
-              target="iana6"></xref>)</t>
+            <t><list style="symbols">
+                <t>Option-code: OPTION_V6_AUTH_DOMAIN (TBA1, see <xref
+                target="iana6"></xref>)</t>
 
-              <t>Option-length: Length of the authentication-domain-name field
-              in octets.</t>
+                <t>Option-length: Length of the authentication-domain-name
+                field in octets.</t>
 
-              <t>authentication-domain-name: A fully qualified domain name of
-              the DNS server. This field is formatted as specified in Section
-              8 of <xref target="RFC3315"></xref>.</t>
-            </list></t>
+                <t>authentication-domain-name: A fully qualified domain name
+                of the DNS server. This field is formatted as specified in
+                Section 10 of <xref target="RFC8415"></xref>.</t>
+              </list></t>
+          </section>
+
+          <section title="DHCPv6 Client Behavior">
+            <t>DHCP clients MAY request options OPTION_V6_AUTH_DOMAIN as
+            defined in <xref target="RFC8415"></xref>, Sections 18.2.1,
+            18.2.2, 18.2.4, 18.2.5, 18.2.6, and 21.7. As a convenience to the
+            reader, it is mentioned here that the DHCP client includes the
+            requested option code in the Option Request Option.</t>
+
+            <t>If the DHCP client receives more than one instance of
+            OPTION_V6_AUTH_DOMAIN option, it MUST use only the first instance
+            of that option.</t>
+          </section>
         </section>
 
-        <section title="DHCPv6 Client Behavior">
-          <t>DHCP clients MAY request options OPTION_V6_AUTH_DOMAIN as defined
-          in <xref target="RFC3315"></xref>, Sections 17.1.1, 18.1.1, 18.1.3,
-          18.1.4, 18.1.5, and 22.7. As a convenience to the reader, it is
-          mentioned here that the DHCP client includes the requested option
-          code in the Option Request Option.</t>
+        <section title="DHCPv4 DNS Reference Identifier Option">
+          <section title="Option Format">
+            <t>The DHCPv4 DNS Reference Identifier option is used to configure
+            an authentication domain name. The format of this option is
+            illustrated in <xref target="dhcpri_dots"></xref>.</t>
 
-          <t>If the DHCP client receives more than one instance of
-          OPTION_V6_AUTH_DOMAIN option, it MUST use only the first instance of
-          that option.</t>
-        </section>
-      </section>
-
-      <section title="DHCPv4 DNS Options">
-        <section title="Format of DNS Reference Identifier Option">
-          <t>The DHCPv4 DNS option is used to configure a authentication
-          domain name. The format of this option is illustrated in <xref
-          target="dhcpri_dots"></xref>.</t>
-
-          <t><figure anchor="dhcpri_dots"
-              title="DHCPv4 DNS Reference Identifier option">
-              <artwork><![CDATA[
+            <t><figure anchor="dhcpri_dots"
+                title="DHCPv4 DNS Reference Identifier option">
+                <artwork><![CDATA[
           Code  Length   authentication domain name
          +-----+-----+-----+-----+-----+-----+-----+--
          |TBA2 |  n  |  s1 |  s2 |  s3 |  s4 | s5  |  ...
@@ -329,53 +386,56 @@
    domain name encoding.
 
 ]]></artwork>
-            </figure></t>
+              </figure></t>
 
-          <t>The fields of the option shown in <xref
-          target="dhcpri_dots"></xref> are as follows:<?rfc subcompact="yes" ?><list
-              style="symbols">
-              <t>Code: OPTION_V4_AUTH_DOMAIN (TBA2, see <xref
-              target="iana4"></xref>);</t>
+            <t>The fields of the option shown in <xref
+            target="dhcpri_dots"></xref> are as follows:<?rfc subcompact="yes" ?><list
+                style="symbols">
+                <t>Code: OPTION_V4_AUTH_DOMAIN (TBA2, see <xref
+                target="iana4"></xref>);</t>
 
-              <t>Length: Includes the length of the authentication domain name
-              field in octets; the maximum length is 255 octets.</t>
+                <t>Length: Includes the length of the authentication domain
+                name field in octets; the maximum length is 255 octets.</t>
 
-              <t>Authentication domain name: The domain name of the DNS
-              server. This field is formatted as specified in Section 8 of
-              <xref target="RFC3315"></xref>.</t>
-            </list></t>
-        </section>
+                <t>Authentication domain name: The domain name of the DNS
+                server. This field is formatted as specified in Section 10 of
+                <xref target="RFC8415"></xref>.</t>
+              </list></t>
+          </section>
 
-        <section title="DHCPv4 Client Behavior">
-          <t>To discover a authentication domain name, the DHCPv4 client MUST
-          include OPTION_V4_AUTH_DOMAIN in a Parameter Request List Option
-          <xref target="RFC2132"></xref>.</t>
+          <section title="DHCPv4 Client Behavior">
+            <t>To discover a authentication domain name, the DHCPv4 client
+            MUST include OPTION_V4_AUTH_DOMAIN in a Parameter Request List
+            Option <xref target="RFC2132"></xref>.</t>
 
-          <t>If the DHCP client receives more than one instance of
-          OPTION_V4_AUTH_DOMAIN option, it MUST use only the first instance of
-          that option. The content of OPTION_V4_AUTH_DOMAIN is used as
-          reference identifier for authentication purposes.</t>
+            <t>If the DHCP client receives more than one instance of
+            OPTION_V4_AUTH_DOMAIN option, it MUST use only the first instance
+            of that option. The content of OPTION_V4_AUTH_DOMAIN is used as
+            reference identifier for authentication purposes.</t>
+          </section>
         </section>
       </section>
-    </section>
 
-    <section anchor="srvr" title="Resolution">
-      <t>Once the DNS client has retrieved the authentication domain name for
-      the DNS server, an S-NAPTR lookup with 'DPRIVE' application service and
-      the desired protocol tag is made to obtain information necessary to
-      securely connect to the DNS server.</t>
+      <section anchor="srvr" title="Resolution">
+        <t>Once the DNS client has retrieved the authentication domain name
+        for the DNS server, an S-NAPTR lookup with 'DPRIVE' application
+        service and the desired protocol tag is made to obtain information
+        necessary to securely connect to the DNS server. The S-NAPTR lookup is
+        performed using an untrusted recursive DNS resolver from an untrusted
+        source (such as DHCP). </t>
 
-      <t>This specification defines "DPRIVE" as an application service tag
-      (<xref target="serviceT"></xref>) and "dns.tls" (<xref
-      target="dnstls"></xref>), "dns.dtls" (<xref target="dnsdtls"></xref>),
-      and "dns.https" (<xref target="dnshttps"></xref>) as application
-      protocol tags.</t>
+        <t>This specification defines "DPRIVE" as an application service tag
+        (<xref target="serviceT"></xref>) and "dns.tls" (<xref
+        target="dnstls"></xref>), "dns.dtls" (<xref target="dnsdtls"></xref>),
+        and "dns.https" (<xref target="dnshttps"></xref>) as application
+        protocol tags.</t>
 
-      <t>If no DNS-specific S-NAPTR records can be retrieved, the discovery
-      procedure fails for this authentication domain name. However, before
-      retrying a lookup that has failed, a DNS client MUST wait a time period
-      that is appropriate for the encountered error (e.g., NXDOMAIN, timeout,
-      etc.).</t>
+        <t>If no DNS-specific S-NAPTR records can be retrieved, the discovery
+        procedure fails for this authentication domain name. However, before
+        retrying a lookup that has failed, a DNS client MUST wait a time
+        period that is appropriate for the encountered error (e.g., NXDOMAIN,
+        timeout, etc.).</t>
+      </section>
     </section>
 
     <section anchor="Security" title="Security Considerations">
@@ -384,6 +444,9 @@
       DNS server. An attacker could attempt to compromise the DHCP discovery
       and S-NAPTR resolution. The attack is prevented by validating the
       certificate presented by the DNS server.</t>
+
+      <t>DHCP-related security considerations are discussed in <xref
+      target="RFC2131"></xref> and <xref target="RFC8415"></xref>.</t>
 
       <t>Security considerations in <xref
       target="I-D.ietf-anima-bootstrapping-keyinfra"></xref> and <xref
@@ -497,11 +560,17 @@
 
   <back>
     <references title="Normative References">
-      <?rfc include="reference.RFC.3315"?>
+      <?rfc include="reference.RFC.8415"?>
+
+      <?rfc include="reference.RFC.2119"?>
+
+      <?rfc include='reference.RFC.8174'?>
 
       <?rfc include="reference.RFC.6125"?>
 
       <?rfc include="reference.RFC.2132"?>
+
+      <?rfc include='reference.RFC.2131'?>
 
       <?rfc include="reference.RFC.7030"?>
 
@@ -528,6 +597,8 @@
       <?rfc include="reference.RFC.8310"?>
 
       <?rfc include='reference.I-D.ietf-opsawg-mud'?>
+
+      <?rfc include='reference.RFC.8499'?>
 
       <reference anchor="CDN"
                  target="https://conferences.sigcomm.org/sigcomm/2015/pdf/papers/p167.pdf">
