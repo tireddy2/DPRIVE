@@ -79,7 +79,7 @@ Table of Contents
    7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   9
      7.1.  DHCPv6 Option . . . . . . . . . . . . . . . . . . . . . .   9
      7.2.  DHCPv4 Option . . . . . . . . . . . . . . . . . . . . . .   9
-     7.3.  Application Service & Application Protocol Tags . . . . .   9
+     7.3.  Application Service & Application Protocol Tags . . . . .  10
        7.3.1.  DNS Application Service Tag Registration  . . . . . .  10
        7.3.2.  dns.tls Application Protocol Tag Registration . . . .  10
        7.3.3.  dns.dtls Application Protocol Tag Registration  . . .  10
@@ -455,14 +455,20 @@ Internet-Draft          DoT/DoH server discovery           February 2019
 
 6.  Security Considerations
 
+   The bootstrapping procedure to discover and authenticate DNS-
+   over-(D)TLS and DNS-over-HTTPS Servers MUST be enabled by the
+   endpoint in a trusted network (e.g.  Enterprise, Secure home
+   networks) and disabled in a untrusted network (e.g. public WiFi
+   network), similar to the way VPN connection from the endpoint to a
+   VPN gateway is disconnected in a trusted network and VPN connection
+   is established in a untrusted network.
+
    The primary attack against the methods described in Section 5 is one
    that would lead to impersonation of a DNS server.  An attacker could
    attempt to compromise the DHCP discovery and S-NAPTR resolution.  The
    attack is prevented by validating the certificate presented by the
-   DNS server.
-
-   DHCP-related security considerations are discussed in [RFC2131] and
-   [RFC8415].
+   DNS server.  DHCP-related security considerations are discussed in
+   [RFC2131] and [RFC8415].
 
    Security considerations in [I-D.ietf-anima-bootstrapping-keyinfra]
    and [RFC7804] need to be taken into consideration.
@@ -491,12 +497,6 @@ Internet-Draft          DoT/DoH server discovery           February 2019
                                maximum length is    authentication
                                255 octets.          domain name.
 
-7.3.  Application Service & Application Protocol Tags
-
-   This document requests IANA to make the following allocations from
-   the registry available at: https://www.iana.org/assignments/s-naptr-
-   parameters/s-naptr-parameters.xhtml.
-
 
 
 
@@ -505,6 +505,12 @@ Reddy, et al.            Expires August 25, 2019                [Page 9]
 
 Internet-Draft          DoT/DoH server discovery           February 2019
 
+
+7.3.  Application Service & Application Protocol Tags
+
+   This document requests IANA to make the following allocations from
+   the registry available at: https://www.iana.org/assignments/s-naptr-
+   parameters/s-naptr-parameters.xhtml.
 
 7.3.1.  DNS Application Service Tag Registration
 
@@ -549,18 +555,16 @@ Internet-Draft          DoT/DoH server discovery           February 2019
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
 
-   [RFC2131]  Droms, R., "Dynamic Host Configuration Protocol",
-              RFC 2131, DOI 10.17487/RFC2131, March 1997,
-              <https://www.rfc-editor.org/info/rfc2131>.
-
-
-
 
 
 Reddy, et al.            Expires August 25, 2019               [Page 10]
 
 Internet-Draft          DoT/DoH server discovery           February 2019
 
+
+   [RFC2131]  Droms, R., "Dynamic Host Configuration Protocol",
+              RFC 2131, DOI 10.17487/RFC2131, March 1997,
+              <https://www.rfc-editor.org/info/rfc2131>.
 
    [RFC2132]  Alexander, S. and R. Droms, "DHCP Options and BOOTP Vendor
               Extensions", RFC 2132, DOI 10.17487/RFC2132, March 1997,
@@ -607,16 +611,16 @@ Internet-Draft          DoT/DoH server discovery           February 2019
               DOI 10.17487/RFC8094, February 2017,
               <https://www.rfc-editor.org/info/rfc8094>.
 
-   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
-              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
-              May 2017, <https://www.rfc-editor.org/info/rfc8174>.
-
 
 
 Reddy, et al.            Expires August 25, 2019               [Page 11]
 
 Internet-Draft          DoT/DoH server discovery           February 2019
 
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/info/rfc8174>.
 
    [RFC8295]  Turner, S., "EST (Enrollment over Secure Transport)
               Extensions", RFC 8295, DOI 10.17487/RFC8295, January 2018,
@@ -662,10 +666,6 @@ Authors' Addresses
    India
 
    Email: TirumaleswarReddy_Konda@McAfee.com
-
-
-
-
 
 
 

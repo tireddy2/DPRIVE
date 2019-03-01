@@ -439,14 +439,21 @@
     </section>
 
     <section anchor="Security" title="Security Considerations">
+      <t>The bootstrapping procedure to discover and authenticate
+      DNS-over-(D)TLS and DNS-over-HTTPS Servers MUST be enabled by the
+      endpoint in a trusted network (e.g. Enterprise, Secure home networks)
+      and disabled in a untrusted network (e.g. public WiFi network), similar
+      to the way VPN connection from the endpoint to a VPN gateway is
+      disconnected in a trusted network and VPN connection is established in a
+      untrusted network. </t>
+
       <t>The primary attack against the methods described in <xref
       target="discovery"></xref> is one that would lead to impersonation of a
       DNS server. An attacker could attempt to compromise the DHCP discovery
       and S-NAPTR resolution. The attack is prevented by validating the
-      certificate presented by the DNS server.</t>
-
-      <t>DHCP-related security considerations are discussed in <xref
-      target="RFC2131"></xref> and <xref target="RFC8415"></xref>.</t>
+      certificate presented by the DNS server. DHCP-related security
+      considerations are discussed in <xref target="RFC2131"></xref> and <xref
+      target="RFC8415"></xref>.</t>
 
       <t>Security considerations in <xref
       target="I-D.ietf-anima-bootstrapping-keyinfra"></xref> and <xref
