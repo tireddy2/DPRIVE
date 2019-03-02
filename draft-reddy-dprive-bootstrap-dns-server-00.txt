@@ -73,7 +73,7 @@ Table of Contents
    5.  Discovery Procedure . . . . . . . . . . . . . . . . . . . . .   6
      5.1.  DNS Reference Identifier DHCP Options . . . . . . . . . .   6
        5.1.1.  DHCPv6 DNS Reference Identifier Option  . . . . . . .   7
-       5.1.2.  DHCPv4 DNS Reference Identifier Option  . . . . . . .   7
+       5.1.2.  DHCPv4 DNS Reference Identifier Option  . . . . . . .   8
      5.2.  Resolution  . . . . . . . . . . . . . . . . . . . . . . .   8
    6.  Security Considerations . . . . . . . . . . . . . . . . . . .   9
    7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   9
@@ -84,10 +84,11 @@ Table of Contents
        7.3.2.  dns.tls Application Protocol Tag Registration . . . .  10
        7.3.3.  dns.dtls Application Protocol Tag Registration  . . .  10
        7.3.4.  dns.https Application Protocol Tag Registration . . .  10
-   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  10
-     8.1.  Normative References  . . . . . . . . . . . . . . . . . .  10
-     8.2.  Informative References  . . . . . . . . . . . . . . . . .  12
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  12
+   8.  Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .  10
+   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  11
+     9.1.  Normative References  . . . . . . . . . . . . . . . . . .  11
+     9.2.  Informative References  . . . . . . . . . . . . . . . . .  12
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  13
 
 1.  Introduction
 
@@ -105,7 +106,6 @@ Table of Contents
    these domains.  If the endpoint has enabled strict privacy profile
    (Section 5 of [RFC8310]), and the network security service blocks the
    traffic to the public DNS server, DNS service is not available to the
-   endpoint and ultimately the endpoint cannot access Internet.  If the
 
 
 
@@ -114,6 +114,7 @@ Reddy, et al.            Expires August 25, 2019                [Page 2]
 Internet-Draft          DoT/DoH server discovery           February 2019
 
 
+   endpoint and ultimately the endpoint cannot access Internet.  If the
    endpoint has enabled opportunistic privacy profile (Section 5 of
    [RFC8310]), and the network security service blocks traffic to the
    public DNS server, the endpoint will either fallback to an encrypted
@@ -159,9 +160,8 @@ Internet-Draft          DoT/DoH server discovery           February 2019
    over-HTTPS servers provided by the local network.  The overall
    procedure can be structured into the following steps:
 
-   o  Bootstrapping phase (Section 3 and Section 4) is meant to
-      automatically to automatically bootstrap endpoints with local
-      network's CA certificates and DNS server certificate.
+
+
 
 
 
@@ -169,6 +169,10 @@ Reddy, et al.            Expires August 25, 2019                [Page 3]
 
 Internet-Draft          DoT/DoH server discovery           February 2019
 
+
+   o  Bootstrapping phase (Section 3 and Section 4) is meant to
+      automatically to automatically bootstrap endpoints with local
+      network's CA certificates and DNS server certificate.
 
    o  Discovery phase (Section 5) is meant to discover an authentication
       domain (defined in [RFC8310]) to authenticate the privacy-enabling
@@ -214,10 +218,6 @@ Internet-Draft          DoT/DoH server discovery           February 2019
 
       2.  The IoT device validates the signed voucher using the
           manufacturer installed trust anchor associated with the MASA,
-          stores the CA's public key and validates the provisional TLS
-          connection to the registrar.
-
-
 
 
 
@@ -225,6 +225,9 @@ Reddy, et al.            Expires August 25, 2019                [Page 4]
 
 Internet-Draft          DoT/DoH server discovery           February 2019
 
+
+          stores the CA's public key and validates the provisional TLS
+          connection to the registrar.
 
       3.  The IoT device requests the full Enrollment over Secure
           Transport (EST) [RFC7030] distribution of current CA
@@ -270,10 +273,7 @@ Internet-Draft          DoT/DoH server discovery           February 2019
        the Explicit Trust Anchor database to validate the DNS server
        certificate.
 
-   4.  TBD: The endpoint learns the End-Entity certificates [RFC8295]
-       from the BRSKI-EST server.  The certificate provisioned to the
-       DNS server in the local network will be treated as a End-Entity
-       certificate.  The endpoint needs to identify the End-Entity
+
 
 
 
@@ -282,6 +282,10 @@ Reddy, et al.            Expires August 25, 2019                [Page 5]
 Internet-Draft          DoT/DoH server discovery           February 2019
 
 
+   4.  TBD: The endpoint learns the End-Entity certificates [RFC8295]
+       from the BRSKI-EST server.  The certificate provisioned to the
+       DNS server in the local network will be treated as a End-Entity
+       certificate.  The endpoint needs to identify the End-Entity
        certificate is provisioned to the DNS server, the key usage
        extension [RFC5280] can be used to restrict the use of the End-
        Entity certificate to authenticate the DNS server, a new bit will
@@ -301,7 +305,9 @@ Internet-Draft          DoT/DoH server discovery           February 2019
       protocols DNS-over-TLS, DNS-over-DTLS, and DNS-over-HTTPS
       supported by the DNS server and the DNS privacy protocol preferred
       by the DNS server administrators, as specified in Section 5.2 and
-      Section 7.3.1.
+      Section 7.3.1.  If DNS-over-HTTPS protocol is supported by the DNS
+      server, the DNS client queries for the URI resource record type
+      [RFC7553] to use the https URI scheme (Section 3 of [RFC8484]).
 
    o  The DNS client initiates (D)TLS handshake with the DNS server, the
       server presents its certificate and the client validates the
@@ -310,6 +316,11 @@ Internet-Draft          DoT/DoH server discovery           February 2019
       Section 4.  The DNS client uses validation techniques as described
       in [RFC6125] to compare the authentication domain name to the
       certificate provided by the DNS server.
+
+   o  If the DNS client cannot reach or establish an authenticated and
+      encrypted connection with the privacy-enabling DNS server provided
+      by the local network, the DNS client can fallback to the privacy-
+      enabling public DNS server.
 
 5.1.  DNS Reference Identifier DHCP Options
 
@@ -320,23 +331,18 @@ Internet-Draft          DoT/DoH server discovery           February 2019
       certificates are a very small percentage (less than 1%) of issued
       certificates".
 
-   In order to allow for certificate authentication between a DNS client
-   and server while accommodating for the current best practices for
-   issuing certificates, this document allows for configuring
-   authentication domain name to clients.  This name can be used as a
-   reference identifier for authentication purposes.
-
-
-
-
-
-
 
 
 Reddy, et al.            Expires August 25, 2019                [Page 6]
 
 Internet-Draft          DoT/DoH server discovery           February 2019
 
+
+   In order to allow for certificate authentication between a DNS client
+   and server while accommodating for the current best practices for
+   issuing certificates, this document allows for configuring
+   authentication domain name to clients.  This name can be used as a
+   reference identifier for authentication purposes.
 
 5.1.1.  DHCPv6 DNS Reference Identifier Option
 
@@ -379,13 +385,7 @@ Internet-Draft          DoT/DoH server discovery           February 2019
    OPTION_V6_AUTH_DOMAIN option, it MUST use only the first instance of
    that option.
 
-5.1.2.  DHCPv4 DNS Reference Identifier Option
 
-5.1.2.1.  Option Format
-
-   The DHCPv4 DNS Reference Identifier option is used to configure an
-   authentication domain name.  The format of this option is illustrated
-   in Figure 2.
 
 
 
@@ -393,6 +393,14 @@ Reddy, et al.            Expires August 25, 2019                [Page 7]
 
 Internet-Draft          DoT/DoH server discovery           February 2019
 
+
+5.1.2.  DHCPv4 DNS Reference Identifier Option
+
+5.1.2.1.  Option Format
+
+   The DHCPv4 DNS Reference Identifier option is used to configure an
+   authentication domain name.  The format of this option is illustrated
+   in Figure 2.
 
             Code  Length   authentication domain name
            +-----+-----+-----+-----+-----+-----+-----+--
@@ -433,14 +441,6 @@ Internet-Draft          DoT/DoH server discovery           February 2019
    performed using an untrusted recursive DNS resolver from an untrusted
    source (such as DHCP).
 
-   This specification defines "DPRIVE" as an application service tag
-   (Section 7.3.1) and "dns.tls" (Section 7.3.2), "dns.dtls"
-   (Section 7.3.3), and "dns.https" (Section 7.3.4) as application
-   protocol tags.
-
-   If no DNS-specific S-NAPTR records can be retrieved, the discovery
-   procedure fails for this authentication domain name.  However, before
-   retrying a lookup that has failed, a DNS client MUST wait a time
 
 
 
@@ -450,6 +450,14 @@ Reddy, et al.            Expires August 25, 2019                [Page 8]
 Internet-Draft          DoT/DoH server discovery           February 2019
 
 
+   This specification defines "DPRIVE" as an application service tag
+   (Section 7.3.1) and "dns.tls" (Section 7.3.2), "dns.dtls"
+   (Section 7.3.3), and "dns.https" (Section 7.3.4) as application
+   protocol tags.
+
+   If no DNS-specific S-NAPTR records can be retrieved, the discovery
+   procedure fails for this authentication domain name.  However, before
+   retrying a lookup that has failed, a DNS client MUST wait a time
    period that is appropriate for the encountered error (e.g., NXDOMAIN,
    timeout, etc.).
 
@@ -491,20 +499,18 @@ Internet-Draft          DoT/DoH server discovery           February 2019
    the registry maintained in http://www.iana.org/assignments/bootp-
    dhcp-parameters/:
 
-             Option Name Value Data length          Meaning
-   --------------------- ----- -------------------- --------------------
-   OPTION_V4_AUTH_DOMAIN TBA2  Variable; the        Includes the
-                               maximum length is    authentication
-                               255 octets.          domain name.
-
-
-
 
 
 Reddy, et al.            Expires August 25, 2019                [Page 9]
 
 Internet-Draft          DoT/DoH server discovery           February 2019
 
+
+             Option Name Value Data length          Meaning
+   --------------------- ----- -------------------- --------------------
+   OPTION_V4_AUTH_DOMAIN TBA2  Variable; the        Includes the
+                               maximum length is    authentication
+                               255 octets.          domain name.
 
 7.3.  Application Service & Application Protocol Tags
 
@@ -540,9 +546,25 @@ Internet-Draft          DoT/DoH server discovery           February 2019
    o  Security Considerations: See Section 6
    o  Contact Information: <one of the authors>
 
-8.  References
+8.  Acknowledgments
 
-8.1.  Normative References
+   Thanks to Joe Hildebrand for his comments and suggestions.
+
+
+
+
+
+
+
+
+Reddy, et al.            Expires August 25, 2019               [Page 10]
+
+Internet-Draft          DoT/DoH server discovery           February 2019
+
+
+9.  References
+
+9.1.  Normative References
 
    [I-D.ietf-anima-bootstrapping-keyinfra]
               Pritikin, M., Richardson, M., Behringer, M., Bjarnason,
@@ -554,13 +576,6 @@ Internet-Draft          DoT/DoH server discovery           February 2019
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
-
-
-
-Reddy, et al.            Expires August 25, 2019               [Page 10]
-
-Internet-Draft          DoT/DoH server discovery           February 2019
-
 
    [RFC2131]  Droms, R., "Dynamic Host Configuration Protocol",
               RFC 2131, DOI 10.17487/RFC2131, March 1997,
@@ -592,10 +607,26 @@ Internet-Draft          DoT/DoH server discovery           February 2019
               Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
               <https://www.rfc-editor.org/info/rfc6763>.
 
+
+
+
+
+
+
+Reddy, et al.            Expires August 25, 2019               [Page 11]
+
+Internet-Draft          DoT/DoH server discovery           February 2019
+
+
    [RFC7030]  Pritikin, M., Ed., Yee, P., Ed., and D. Harkins, Ed.,
               "Enrollment over Secure Transport", RFC 7030,
               DOI 10.17487/RFC7030, October 2013,
               <https://www.rfc-editor.org/info/rfc7030>.
+
+   [RFC7553]  Faltstrom, P. and O. Kolkman, "The Uniform Resource
+              Identifier (URI) DNS Resource Record", RFC 7553,
+              DOI 10.17487/RFC7553, June 2015,
+              <https://www.rfc-editor.org/info/rfc7553>.
 
    [RFC7804]  Melnikov, A., "Salted Challenge Response HTTP
               Authentication Mechanism", RFC 7804, DOI 10.17487/RFC7804,
@@ -610,13 +641,6 @@ Internet-Draft          DoT/DoH server discovery           February 2019
               Transport Layer Security (DTLS)", RFC 8094,
               DOI 10.17487/RFC8094, February 2017,
               <https://www.rfc-editor.org/info/rfc8094>.
-
-
-
-Reddy, et al.            Expires August 25, 2019               [Page 11]
-
-Internet-Draft          DoT/DoH server discovery           February 2019
-
 
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
@@ -636,12 +660,19 @@ Internet-Draft          DoT/DoH server discovery           February 2019
               (DoH)", RFC 8484, DOI 10.17487/RFC8484, October 2018,
               <https://www.rfc-editor.org/info/rfc8484>.
 
-8.2.  Informative References
+9.2.  Informative References
 
    [CDN]      "End-User Mapping: Next Generation Request Routing for
               Content Delivery", 2015,
               <https://conferences.sigcomm.org/sigcomm/2015/pdf/papers/
               p167.pdf>.
+
+
+
+Reddy, et al.            Expires August 25, 2019               [Page 12]
+
+Internet-Draft          DoT/DoH server discovery           February 2019
+
 
    [I-D.ietf-opsawg-mud]
               Lear, E., Droms, R., and D. Romascanu, "Manufacturer Usage
@@ -668,12 +699,6 @@ Authors' Addresses
    Email: TirumaleswarReddy_Konda@McAfee.com
 
 
-
-Reddy, et al.            Expires August 25, 2019               [Page 12]
-
-Internet-Draft          DoT/DoH server discovery           February 2019
-
-
    Dan Wing
    USA
 
@@ -693,31 +718,6 @@ Internet-Draft          DoT/DoH server discovery           February 2019
    France
 
    Email: mohamed.boucadair@orange.com
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

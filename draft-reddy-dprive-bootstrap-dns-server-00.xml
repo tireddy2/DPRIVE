@@ -292,8 +292,11 @@
           lookup to learn the protocols DNS-over-TLS, DNS-over-DTLS, and
           DNS-over-HTTPS supported by the DNS server and the DNS privacy
           protocol preferred by the DNS server administrators, as specified in
-          <xref target="srvr"></xref> and <xref target="serviceT"> </xref>.
-          </t>
+          <xref target="srvr"></xref> and <xref target="serviceT"> </xref>. If
+          DNS-over-HTTPS protocol is supported by the DNS server, the DNS
+          client queries for the URI resource record type <xref
+          target="RFC7553"></xref> to use the https URI scheme (Section 3 of
+          <xref target="RFC8484"></xref>). </t>
 
           <t>The DNS client initiates (D)TLS handshake with the DNS server,
           the server presents its certificate and the client validates the
@@ -304,6 +307,11 @@
           techniques as described in <xref target="RFC6125"></xref> to compare
           the authentication domain name to the certificate provided by the
           DNS server.</t>
+
+          <t>If the DNS client cannot reach or establish an authenticated and
+          encrypted connection with the privacy-enabling DNS server provided
+          by the local network, the DNS client can fallback to the
+          privacy-enabling public DNS server.</t>
         </list></t>
 
       <section anchor="dhcp" title="DNS Reference Identifier DHCP Options">
@@ -563,6 +571,10 @@
         </section>
       </section>
     </section>
+
+    <section anchor="acknowledgments" title="Acknowledgments">
+      <t>Thanks to Joe Hildebrand for his comments and suggestions.</t>
+    </section>
   </middle>
 
   <back>
@@ -596,6 +608,8 @@
       <?rfc include="reference.RFC.3958"?>
 
       <?rfc include="reference.RFC.6763"?>
+
+      <?rfc include="reference.RFC.7553"?>
 
       <?rfc include='reference.I-D.ietf-anima-bootstrapping-keyinfra'?>
     </references>

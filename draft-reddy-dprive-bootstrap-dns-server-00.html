@@ -392,9 +392,10 @@
 <link href="#rfc.section.7.3.2" rel="Chapter" title="7.3.2 dns.tls Application Protocol Tag Registration">
 <link href="#rfc.section.7.3.3" rel="Chapter" title="7.3.3 dns.dtls Application Protocol Tag Registration">
 <link href="#rfc.section.7.3.4" rel="Chapter" title="7.3.4 dns.https Application Protocol Tag Registration">
-<link href="#rfc.references" rel="Chapter" title="8 References">
-<link href="#rfc.references.1" rel="Chapter" title="8.1 Normative References">
-<link href="#rfc.references.2" rel="Chapter" title="8.2 Informative References">
+<link href="#rfc.section.8" rel="Chapter" title="8 Acknowledgments">
+<link href="#rfc.references" rel="Chapter" title="9 References">
+<link href="#rfc.references.1" rel="Chapter" title="9.1 Normative References">
+<link href="#rfc.references.2" rel="Chapter" title="9.2 Informative References">
 <link href="#rfc.authors" rel="Chapter">
 
 
@@ -510,11 +511,13 @@
 </li>
 <li>7.3.4.   <a href="#rfc.section.7.3.4">dns.https Application Protocol Tag Registration</a>
 </li>
-</ul></ul><li>8.   <a href="#rfc.references">References</a>
+</ul></ul><li>8.   <a href="#rfc.section.8">Acknowledgments</a>
 </li>
-<ul><li>8.1.   <a href="#rfc.references.1">Normative References</a>
+<li>9.   <a href="#rfc.references">References</a>
 </li>
-<li>8.2.   <a href="#rfc.references.2">Informative References</a>
+<ul><li>9.1.   <a href="#rfc.references.1">Normative References</a>
+</li>
+<li>9.2.   <a href="#rfc.references.2">Informative References</a>
 </li>
 </ul><li><a href="#rfc.authors">Authors' Addresses</a>
 </li>
@@ -575,8 +578,9 @@
 
 <ul>
 <li>The DNS client uses DHCP to discover the authentication domain name for the DNS server, as specified in <a href="#dhcp" class="xref">Section 5.1</a>.</li>
-<li>The DNS client then uses S-NAPTR <a href="#RFC3958" class="xref">[RFC3958]</a> lookup to learn the protocols DNS-over-TLS, DNS-over-DTLS, and DNS-over-HTTPS supported by the DNS server and the DNS privacy protocol preferred by the DNS server administrators, as specified in <a href="#srvr" class="xref">Section 5.2</a> and <a href="#serviceT" class="xref">Section 7.3.1</a>.  </li>
+<li>The DNS client then uses S-NAPTR <a href="#RFC3958" class="xref">[RFC3958]</a> lookup to learn the protocols DNS-over-TLS, DNS-over-DTLS, and DNS-over-HTTPS supported by the DNS server and the DNS privacy protocol preferred by the DNS server administrators, as specified in <a href="#srvr" class="xref">Section 5.2</a> and <a href="#serviceT" class="xref">Section 7.3.1</a>. If DNS-over-HTTPS protocol is supported by the DNS server, the DNS client queries for the URI resource record type <a href="#RFC7553" class="xref">[RFC7553]</a> to use the https URI scheme (Section 3 of <a href="#RFC8484" class="xref">[RFC8484]</a>). </li>
 <li>The DNS client initiates (D)TLS handshake with the DNS server, the server presents its certificate and the client validates the server certificate using the End-Entity certificate and Explicit Trust Anchor database downloaded in steps 3 and 4 in <a href="#bootstrap-iot" class="xref">Section 3</a> and <a href="#bootstrap-endpoint" class="xref">Section 4</a>. The DNS client uses validation techniques as described in <a href="#RFC6125" class="xref">[RFC6125]</a> to compare the authentication domain name to the certificate provided by the DNS server.</li>
+<li>If the DNS client cannot reach or establish an authenticated and encrypted connection with the privacy-enabling DNS server provided by the local network, the DNS client can fallback to the privacy-enabling public DNS server.</li>
 </ul>
 <h1 id="rfc.section.5.1">
 <a href="#rfc.section.5.1">5.1.</a> <a href="#dhcp" id="dhcp">DNS Reference Identifier DHCP Options</a>
@@ -747,10 +751,14 @@
 </li>
 <li>Contact Information: &lt;one of the authors&gt;</li>
 </ul>
+<h1 id="rfc.section.8">
+<a href="#rfc.section.8">8.</a> <a href="#acknowledgments" id="acknowledgments">Acknowledgments</a>
+</h1>
+<p id="rfc.section.8.p.1">Thanks to Joe Hildebrand for his comments and suggestions.</p>
 <h1 id="rfc.references">
-<a href="#rfc.references">8.</a> References</h1>
+<a href="#rfc.references">9.</a> References</h1>
 <h1 id="rfc.references.1">
-<a href="#rfc.references.1">8.1.</a> Normative References</h1>
+<a href="#rfc.references.1">9.1.</a> Normative References</h1>
 <table><tbody>
 <tr>
 <td class="reference"><b id="I-D.ietf-anima-bootstrapping-keyinfra">[I-D.ietf-anima-bootstrapping-keyinfra]</b></td>
@@ -798,6 +806,11 @@
 <a>Pritikin, M.</a>, <a>Yee, P.</a> and <a>D. Harkins</a>, "<a href="https://tools.ietf.org/html/rfc7030">Enrollment over Secure Transport</a>", RFC 7030, DOI 10.17487/RFC7030, October 2013.</td>
 </tr>
 <tr>
+<td class="reference"><b id="RFC7553">[RFC7553]</b></td>
+<td class="top">
+<a>Faltstrom, P.</a> and <a>O. Kolkman</a>, "<a href="https://tools.ietf.org/html/rfc7553">The Uniform Resource Identifier (URI) DNS Resource Record</a>", RFC 7553, DOI 10.17487/RFC7553, June 2015.</td>
+</tr>
+<tr>
 <td class="reference"><b id="RFC7804">[RFC7804]</b></td>
 <td class="top">
 <a>Melnikov, A.</a>, "<a href="https://tools.ietf.org/html/rfc7804">Salted Challenge Response HTTP Authentication Mechanism</a>", RFC 7804, DOI 10.17487/RFC7804, March 2016.</td>
@@ -834,7 +847,7 @@
 </tr>
 </tbody></table>
 <h1 id="rfc.references.2">
-<a href="#rfc.references.2">8.2.</a> Informative References</h1>
+<a href="#rfc.references.2">9.2.</a> Informative References</h1>
 <table><tbody>
 <tr>
 <td class="reference"><b id="CDN">[CDN]</b></td>
