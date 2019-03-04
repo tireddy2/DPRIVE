@@ -150,8 +150,8 @@
       <t>The DPRIVE and DoH working groups have not defined an automated
       mechanism to securely bootstrap the endpoints to discover and
       authenticate DNS-over-(D)TLS and DNS-over-HTTPS servers in the local
-      network. Some clients have hard-coded specific public DNS servers (such
-      as Mozilla using Cloudflare's DNS-over-HTTPS server). If endpoints
+      network. Some clients have pre-configured specific public DNS servers
+      (such as Mozilla using Cloudflare's DNS-over-HTTPS server). If endpoints
       continue to use hard-coded public DNS servers, this has a risk of
       relying on few centralized DNS services. Further, Content Delivery
       Networks (CDNs) that map traffic based on DNS may lose the ability to
