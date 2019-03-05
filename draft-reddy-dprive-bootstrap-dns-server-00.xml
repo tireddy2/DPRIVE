@@ -33,7 +33,7 @@
           <country>India</country>
         </postal>
 
-        <email>TirumaleswarReddy_Konda@McAfee.com</email>
+        <email>kondtir@gmail.com</email>
       </address>
     </author>
 
@@ -454,6 +454,14 @@
       to the way VPN connection from the endpoint to a VPN gateway is
       disconnected in a trusted network and VPN connection is established in a
       untrusted network. </t>
+
+      <t>If the endpoint has enabled strict privacy profile, and the network
+      security service blocks the traffic to the privacy-enabling public DNS
+      server, a hard failure occurs and the user is notified. The user has a
+      choice to switch to another network or if the user trusts the network,
+      the user can enable strict privacy profile with the DNS-over-(D)TLS or
+      DNS-over-HTTPS server discovered in the network instead of downgrading
+      to opportunistic privacy profile. </t>
 
       <t>The primary attack against the methods described in <xref
       target="discovery"></xref> is one that would lead to impersonation of a

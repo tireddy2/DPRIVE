@@ -78,16 +78,16 @@ Table of Contents
    6.  Security Considerations . . . . . . . . . . . . . . . . . . .   9
    7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   9
      7.1.  DHCPv6 Option . . . . . . . . . . . . . . . . . . . . . .   9
-     7.2.  DHCPv4 Option . . . . . . . . . . . . . . . . . . . . . .   9
+     7.2.  DHCPv4 Option . . . . . . . . . . . . . . . . . . . . . .  10
      7.3.  Application Service & Application Protocol Tags . . . . .  10
        7.3.1.  DNS Application Service Tag Registration  . . . . . .  10
        7.3.2.  dns.tls Application Protocol Tag Registration . . . .  10
        7.3.3.  dns.dtls Application Protocol Tag Registration  . . .  10
        7.3.4.  dns.https Application Protocol Tag Registration . . .  10
-   8.  Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .  10
+   8.  Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .  11
    9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  11
      9.1.  Normative References  . . . . . . . . . . . . . . . . . .  11
-     9.2.  Informative References  . . . . . . . . . . . . . . . . .  12
+     9.2.  Informative References  . . . . . . . . . . . . . . . . .  13
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  13
 
 1.  Introduction
@@ -471,6 +471,14 @@ Internet-Draft          DoT/DoH server discovery           February 2019
    VPN gateway is disconnected in a trusted network and VPN connection
    is established in a untrusted network.
 
+   If the endpoint has enabled strict privacy profile, and the network
+   security service blocks the traffic to the privacy-enabling public
+   DNS server, a hard failure occurs and the user is notified.  The user
+   has a choice to switch to another network or if the user trusts the
+   network, the user can enable strict privacy profile with the DNS-
+   over-(D)TLS or DNS-over-HTTPS server discovered in the network
+   instead of downgrading to opportunistic privacy profile.
+
    The primary attack against the methods described in Section 5 is one
    that would lead to impersonation of a DNS server.  An attacker could
    attempt to compromise the DHCP discovery and S-NAPTR resolution.  The
@@ -489,6 +497,15 @@ Internet-Draft          DoT/DoH server discovery           February 2019
    the registry maintained in http://www.iana.org/assignments/
    dhcpv6-parameters:
 
+
+
+
+
+Reddy, et al.            Expires August 25, 2019                [Page 9]
+
+Internet-Draft          DoT/DoH server discovery           February 2019
+
+
                                   Option Name Value
                         --------------------- -----
                         OPTION_V6_AUTH_DOMAIN TBA1
@@ -498,13 +515,6 @@ Internet-Draft          DoT/DoH server discovery           February 2019
    IANA is requested to assign the following new DHCPv4 Option Code in
    the registry maintained in http://www.iana.org/assignments/bootp-
    dhcp-parameters/:
-
-
-
-Reddy, et al.            Expires August 25, 2019                [Page 9]
-
-Internet-Draft          DoT/DoH server discovery           February 2019
-
 
              Option Name Value Data length          Meaning
    --------------------- ----- -------------------- --------------------
@@ -544,16 +554,6 @@ Internet-Draft          DoT/DoH server discovery           February 2019
    o  Application Protocol Tag: dnshttps
    o  Intended Usage: See Section 5.2
    o  Security Considerations: See Section 6
-   o  Contact Information: <one of the authors>
-
-8.  Acknowledgments
-
-   Thanks to Joe Hildebrand for his comments and suggestions.
-
-
-
-
-
 
 
 
@@ -561,6 +561,12 @@ Reddy, et al.            Expires August 25, 2019               [Page 10]
 
 Internet-Draft          DoT/DoH server discovery           February 2019
 
+
+   o  Contact Information: <one of the authors>
+
+8.  Acknowledgments
+
+   Thanks to Joe Hildebrand for his comments and suggestions.
 
 9.  References
 
@@ -603,12 +609,6 @@ Internet-Draft          DoT/DoH server discovery           February 2019
               Security (TLS)", RFC 6125, DOI 10.17487/RFC6125, March
               2011, <https://www.rfc-editor.org/info/rfc6125>.
 
-   [RFC6763]  Cheshire, S. and M. Krochmal, "DNS-Based Service
-              Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
-              <https://www.rfc-editor.org/info/rfc6763>.
-
-
-
 
 
 
@@ -617,6 +617,10 @@ Reddy, et al.            Expires August 25, 2019               [Page 11]
 
 Internet-Draft          DoT/DoH server discovery           February 2019
 
+
+   [RFC6763]  Cheshire, S. and M. Krochmal, "DNS-Based Service
+              Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
+              <https://www.rfc-editor.org/info/rfc6763>.
 
    [RFC7030]  Pritikin, M., Ed., Yee, P., Ed., and D. Harkins, Ed.,
               "Enrollment over Secure Transport", RFC 7030,
@@ -660,12 +664,8 @@ Internet-Draft          DoT/DoH server discovery           February 2019
               (DoH)", RFC 8484, DOI 10.17487/RFC8484, October 2018,
               <https://www.rfc-editor.org/info/rfc8484>.
 
-9.2.  Informative References
 
-   [CDN]      "End-User Mapping: Next Generation Request Routing for
-              Content Delivery", 2015,
-              <https://conferences.sigcomm.org/sigcomm/2015/pdf/papers/
-              p167.pdf>.
+
 
 
 
@@ -673,6 +673,13 @@ Reddy, et al.            Expires August 25, 2019               [Page 12]
 
 Internet-Draft          DoT/DoH server discovery           February 2019
 
+
+9.2.  Informative References
+
+   [CDN]      "End-User Mapping: Next Generation Request Routing for
+              Content Delivery", 2015,
+              <https://conferences.sigcomm.org/sigcomm/2015/pdf/papers/
+              p167.pdf>.
 
    [I-D.ietf-opsawg-mud]
               Lear, E., Droms, R., and D. Romascanu, "Manufacturer Usage
@@ -696,7 +703,7 @@ Authors' Addresses
    Bangalore, Karnataka  560071
    India
 
-   Email: TirumaleswarReddy_Konda@McAfee.com
+   Email: kondtir@gmail.com
 
 
    Dan Wing
@@ -712,6 +719,17 @@ Authors' Addresses
    Email: mcr+ietf@sandelman.ca
 
 
+
+
+
+
+
+
+Reddy, et al.            Expires August 25, 2019               [Page 13]
+
+Internet-Draft          DoT/DoH server discovery           February 2019
+
+
    Mohamed Boucadair
    Orange
    Rennes  35000
@@ -725,4 +743,42 @@ Authors' Addresses
 
 
 
-Reddy, et al.            Expires August 25, 2019               [Page 13]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Reddy, et al.            Expires August 25, 2019               [Page 14]
