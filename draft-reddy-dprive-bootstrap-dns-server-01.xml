@@ -290,7 +290,7 @@
           certificate. The endpoint needs to perform SCRAM authentication the
           first time it connects BRSKI-EST server. On subsequent connections
           to the BRSKI-EST server, the endpoint can validate the BRSKI-EST
-          server certificate using the Explicit Trust Anchor Database.</t>
+          server certificate using the Explicit Trust Anchor database.</t>
 
           <t>TBD: The endpoint learns the End-Entity certificates <xref
           target="RFC8295"></xref> from the BRSKI-EST server. The certificate
@@ -320,7 +320,7 @@
           server and the DNS privacy protocol preferred by the DNS server
           administrators, as specified in <xref target="srvr"></xref> and
           <xref target="tag"> </xref>. This specification adds a SRV service
-          label "domain-s" for privacy- enabling DNS servers. In the example
+          label "domain-s" for privacy-enabling DNS servers. In the example
           below, for authentication domain name 'example.net', the resolution
           algorithm will result in the privacy-enabling protocols supported by
           the DNS server and usable DNS server IP addresses and port
@@ -353,8 +353,8 @@
           DNS client queries for the URI resource record type <xref
           target="RFC7553"></xref> to use the https URI scheme (Section 3 of
           <xref target="RFC8484"></xref>). In the example below, for
-          authentication domain name 'example.net' and DNS-over-HTTPS server
-          at https://example.net/dns-query. The following URI resource records
+          authentication domain name 'example.net' and the URL for resolution
+          is https://example.net/dns-query. The following URI resource records
           could be made available: <figure anchor="fig-uri-lookup">
               <artwork><![CDATA[   $ORIGIN example.net.
    _domain-s._tcp    IN URI 10 1 "https://example.net/dns-query"
@@ -391,8 +391,8 @@
       target="bootstrap-iot"></xref> and <xref
       target="bootstrap-endpoint"></xref> with the certificate provided by the
       DNS server in (D)TLS handshake. If the match is successful, the DNS
-      client then validates the server certificate using the Explicit Trust
-      Anchor database entries downloaded in step 3 in <xref
+      client validates the server certificate using the Explicit Trust Anchor
+      database entries downloaded in step 3 in <xref
       target="bootstrap-iot"></xref> and <xref
       target="bootstrap-endpoint"></xref>. </t>
 
@@ -512,8 +512,8 @@
     </section>
 
     <section anchor="acknowledgments" title="Acknowledgments">
-      <t>Thanks to Joe Hildebrand, Harsha Joshi, Patrick McManus and Sara
-      Dickinson for the discussion and comments.</t>
+      <t>Thanks to Joe Hildebrand, Harsha Joshi, Shashank Jain, Patrick
+      McManus and Sara Dickinson for the discussion and comments.</t>
     </section>
   </middle>
 

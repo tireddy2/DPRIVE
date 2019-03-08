@@ -296,7 +296,7 @@ Internet-Draft          DoT/DoH server discovery              March 2019
        perform SCRAM authentication the first time it connects BRSKI-EST
        server.  On subsequent connections to the BRSKI-EST server, the
        endpoint can validate the BRSKI-EST server certificate using the
-       Explicit Trust Anchor Database.
+       Explicit Trust Anchor database.
 
    4.  TBD: The endpoint learns the End-Entity certificates [RFC8295]
        from the BRSKI-EST server.  The certificate provisioned to the
@@ -323,7 +323,7 @@ Internet-Draft          DoT/DoH server discovery              March 2019
       over-DTLS, and DNS-over-HTTPS supported by the DNS server and the
       DNS privacy protocol preferred by the DNS server administrators,
       as specified in Section 5.1 and Section 8.1.  This specification
-      adds a SRV service label "domain-s" for privacy- enabling DNS
+      adds a SRV service label "domain-s" for privacy-enabling DNS
       servers.  In the example below, for authentication domain name
       'example.net', the resolution algorithm will result in the
       privacy-enabling protocols supported by the DNS server and usable
@@ -363,9 +363,9 @@ Internet-Draft          DoT/DoH server discovery              March 2019
    o  If DNS-over-HTTPS protocol is supported by the DNS server, the DNS
       client queries for the URI resource record type [RFC7553] to use
       the https URI scheme (Section 3 of [RFC8484]).  In the example
-      below, for authentication domain name 'example.net' and DNS-over-
-      HTTPS server at https://example.net/dns-query.  The following URI
-      resource records could be made available:
+      below, for authentication domain name 'example.net' and the URL
+      for resolution is https://example.net/dns-query.  The following
+      URI resource records could be made available:
 
       $ORIGIN example.net.
       _domain-s._tcp    IN URI 10 1 "https://example.net/dns-query"
@@ -407,7 +407,7 @@ Internet-Draft          DoT/DoH server discovery              March 2019
    client matches the DNS server certificate downloaded in step 4 in
    Section 3 and Section 4 with the certificate provided by the DNS
    server in (D)TLS handshake.  If the match is successful, the DNS
-   client then validates the server certificate using the Explicit Trust
+   client validates the server certificate using the Explicit Trust
    Anchor database entries downloaded in step 3 in Section 3 and
    Section 4.
 
@@ -522,8 +522,8 @@ Internet-Draft          DoT/DoH server discovery              March 2019
 
 9.  Acknowledgments
 
-   Thanks to Joe Hildebrand, Harsha Joshi, Patrick McManus and Sara
-   Dickinson for the discussion and comments.
+   Thanks to Joe Hildebrand, Harsha Joshi, Shashank Jain, Patrick
+   McManus and Sara Dickinson for the discussion and comments.
 
 10.  References
 
