@@ -100,31 +100,65 @@
 
   <middle>
     <section title="Introduction">
-      <t>Various network security services are provided by Enterprise, secure
-      home and wall-gardened networks to protect endpoints (e.g,. hosts, IoT
-      devices). Some of these security services act on DNS requests from
-      endpoints. However, if an endpoint is configured to use public
+      <t>Traditionally a caching DNS server has been provided by the local
+      network. This provides several benefits including low latency to that
+      DNS server (due to its network proximity to the endpoint). However, if
+      an endpoint is configured to use Internet-hosted or public
       DNS-over-(D)TLS <xref target="RFC7858"></xref> <xref
       target="RFC8094"></xref> or DNS-over-HTTPS <xref
-      target="RFC8484"></xref> servers, network security services in the local
-      network cannot act efficiently on DNS requests from the endpoints. In
-      order to act on DNS requests from endpoints, network security services
-      can block DNS-over-(D)TLS traffic by dropping outgoing packets to
-      destination port 853, and by identifying the domains offering
-      DNS-over-HTTPS servers, DNS-over-HTTPS traffic can be blocked by
-      dropping outgoing packets to these domains. If the endpoint has enabled
-      strict privacy profile (Section 5 of <xref target="RFC8310"></xref>),
-      and the network security service blocks the traffic to the public DNS
-      server, DNS service is not available to the endpoint and ultimately the
-      endpoint cannot access Internet. If the endpoint has enabled
-      opportunistic privacy profile (Section 5 of <xref
-      target="RFC8310"></xref>), and the network security service blocks
-      traffic to the public DNS server, the endpoint will either fallback to
-      an encrypted connection without authenticating the DNS-over-(D)TLS
-      server provided by the local network or fallback to clear text DNS, and
-      cannot exchange encrypted DNS messages. This can compromise the endpoint
-      security and privacy; some of the potential security threats are listed
+      target="RFC8484"></xref> servers, the local DNS server cannot serve the
+      DNS requests from the endpoints. If public DNS servers are used instead
+      of using local DNS servers, the operational problems are listed
       below:</t>
+
+      <t><list style="symbols">
+          <t>"Split DNS" <xref target="RFC2775"></xref> to use the special
+          internal-only domain names (e.g., "internal.example.com") in
+          enterprise networks will not work, and ".local" and "home.arpa"
+          names cannot be locally resolved in home networks.</t>
+
+          <t>Content Delivery Networks (CDNs) that map traffic based on DNS
+          may lose the ability to direct end-user traffic to a nearby cluster
+          in cases where a DNS service is being used that is not affiliated
+          with the local network and which does not send "EDNS Client Subnet"
+          (ECS) information <xref target="RFC7871"></xref> to the CDN's DNS
+          authorities <xref target="CDN"></xref>.</t>
+
+          <t>Some clients have pre-configured specific public DNS servers
+          (such as Mozilla using Cloudflare's DNS-over-HTTPS server). If
+          endpoints continue to use hard-coded public DNS servers, this has a
+          risk of relying on few centralized DNS services.</t>
+        </list></t>
+
+      <t>If public DNS servers are used instead of using local DNS servers,
+      the following paragraph discusses the impact on Network-based
+      security:</t>
+
+      <t>Various network security services are provided by Enterprise, secure
+      home and wall-gardened networks to protect endpoints (e.g,. Hosts, IoT
+      devices). <xref target="I-D.camwinget-tls-use-cases"></xref> discusses
+      some of the Network-based security use cases. These network security
+      services act on DNS requests from endpoints. However, if an endpoint is
+      configured to use public DNS-over-(D)TLS or DNS-over-HTTPS servers,
+      network security services cannot act efficiently on DNS requests from
+      the endpoints. In order to act on DNS requests from endpoints, network
+      security services can block DNS-over-(D)TLS traffic by dropping outgoing
+      packets to destination port 853. Identifying DNS-over-HTTPS traffic is
+      far more challenging than DNS-over-(D)TLS traffic. Network security
+      services can try to identify the domains offering DNS-over-HTTPS
+      servers, and DNS-over-HTTPS traffic can be blocked by dropping outgoing
+      packets to these domains. If the endpoint has enabled strict privacy
+      profile (Section 5 of <xref target="RFC8310"></xref>), and the network
+      security service blocks the traffic to the public DNS server, DNS
+      service is not available to the endpoint and ultimately the endpoint
+      cannot access Internet. If the endpoint has enabled opportunistic
+      privacy profile (Section 5 of <xref target="RFC8310"></xref>), and the
+      network security service blocks traffic to the public DNS server, the
+      endpoint will either fallback to an encrypted connection without
+      authenticating the DNS server provided by the local network or fallback
+      to clear text DNS, and cannot exchange encrypted DNS messages. This can
+      compromise the endpoint security and privacy; some of the potential
+      privacy and security threats are listed below:</t>
 
       <t><list style="symbols">
           <t>Pervasive monitoring of DNS traffic.</t>
@@ -140,37 +174,19 @@
           target="I-D.ietf-opsawg-mud"></xref>).</t>
 
           <t>The network security service cannot prevent an endpoint from
-          accessing malicious domains. Attacks like DNS cache poisoning can
-          lead the user to visit malicious website to inject malware on the
-          endpoint. For instance, malwares like DNSChanger can modify the
-          endpoint's DNS entries to point toward its own rogue name servers
-          which then injected its own advertising into Web pages.</t>
+          accessing malicious domains. </t>
         </list></t>
 
-      <t>The DPRIVE and DoH working groups have not defined an automated
+      <t>The DPRIVE and DoH working groups have not yet defined an automated
       mechanism to securely bootstrap the endpoints to discover and
       authenticate DNS-over-(D)TLS and DNS-over-HTTPS servers in the local
-      network. Some clients have pre-configured specific public DNS servers
-      (such as Mozilla using Cloudflare's DNS-over-HTTPS server). If endpoints
-      continue to use hard-coded public DNS servers, this has a risk of
-      relying on few centralized DNS services. Content Delivery Networks
-      (CDNs) that map traffic based on DNS may lose the ability to direct
-      end-user traffic to a nearby cluster in cases where a DNS service is
-      being used that is not affiliated with the local network and which does
-      not send "EDNS Client Subnet" (ECS) information to the CDN's DNS
-      authorities <xref target="CDN"></xref>. If a local DNS server is not
-      used for DNS resolution, "Split DNS" <xref target="RFC2775"></xref> to
-      use the special internal-only domain names in enterprise networks will
-      not work, and ".local" and "home.arpa" names cannot be locally resolved
-      in home networks.</t>
-
-      <t>The document proposes a mechanism to automatically bootstrap the
-      endpoints to discover and authenticate the DNS-over-(D)TLS and
+      network. The document proposes a mechanism to automatically bootstrap
+      the endpoints to discover and authenticate the DNS-over-(D)TLS and
       DNS-over-HTTPS servers provided by the local network. The overall
       procedure can be structured into the following steps:<list
           style="symbols">
-          <t>Bootstrapping phase (<xref target="bootstrap-iot"></xref> and
-          <xref target="bootstrap-endpoint"></xref>) is meant to automatically
+          <t>Bootstrapping phase (<xref target="bootstrap-endpoint"></xref>
+          and <xref target="bootstrap-iot"></xref>) is meant to automatically
           bootstrap endpoints with local network's CA certificates and DNS
           server certificate.</t>
 
@@ -207,21 +223,75 @@
       target="RFC8499"></xref>.</t>
     </section>
 
-    <section anchor="bootstrap-iot" title="Bootstrapping IoT Devices and CPE">
-      <t>The following steps discuss the mechanism to automatically bootstrap
-      IoT devices with local network's CA certificates and DNS server
-      certificate. The below steps can also be used by CPE acting as DNS
-      forwarders to discover and authenticate DNS-over-(D)TLS and
-      DNS-over-HTTPS servers provided by the access networks.<list
-          style="symbols">
+    <section anchor="bootstrap-endpoint"
+             title="Bootstrapping Endpoint Devices">
+      <t>The following steps explain the mechanism to automatically bootstrap
+      an endpoint with the local network's CA certificates and DNS server
+      certificate: </t>
+
+      <t><list style="symbols">
           <t>Bootstrapping Remote Secure Key Infrastructures (BRSKI) discussed
           in <xref target="I-D.ietf-anima-bootstrapping-keyinfra"></xref>
           provides a solution for secure automated bootstrap of devices. BRSKI
           specifies means to provision credentials on devices to be used to
           operationally access networks. In addition, BRSKI provides an
           automated mechanism for the bootstrap distribution of CA
-          certificates from the EST server. The IoT device can use BRSKI
-          discussed in <xref
+          certificates from the EST server. <list style="numbers">
+              <t>The endpoint authenticates to the local network and
+              establishes provisional TLS connection with the registrar
+              operating as the BRSKI-EST server. The endpoint discovers
+              registrar using DNS-based Service Discovery <xref
+              target="RFC6763"></xref>.</t>
+
+              <t>The endpoint uses Salted Challenge Response Authentication
+              Mechanism (SCRAM) <xref target="RFC7804"></xref> to perform
+              mutual authentication with the discovered BRSKI-EST server.
+              SCRAM provides a more robust authentication mechanism than a
+              plaintext password protected by Transport Layer Security
+              (TLS).</t>
+
+              <t>If the BRSKI-EST server authentication is successful, the
+              endpoint requests the full EST distribution of current CA
+              certificates and validates the provisional TLS connection to the
+              BRSKI-EST server. If the BRSKI-EST server certificate cannot be
+              verified using the CA certificates downloaded, the TLS
+              connection is immediately discarded and the endpoint abandons
+              the attempt to bootstrap from the BRSKI-EST server and discards
+              the CA certificates conveyed by the BRSKI-EST server. If the
+              BRSKI-EST server certificate is verified using the CA
+              certificates downloaded, the endpoint stores the CA certificates
+              as Explicit Trust Anchor database entries. The endpoint uses the
+              Explicit Trust Anchor database to validate the DNS server
+              certificate. The endpoint needs to perform SCRAM authentication
+              the first time it connects BRSKI-EST server. On subsequent
+              connections to the BRSKI-EST server, the endpoint can validate
+              the BRSKI-EST server certificate using the Explicit Trust Anchor
+              database.</t>
+
+              <t>The endpoint learns the End-Entity certificates <xref
+              target="RFC8295"></xref> from the BRSKI-EST server. The
+              certificate provisioned to the DNS server in the local network
+              will be treated as a End-Entity certificate. The endpoint needs
+              to identify the certificate provisioned to the DNS server. The
+              SRV-ID identifier type <xref target="RFC6125"></xref> within
+              subjectAltName entry can be used to identify the DNS server
+              certificate. For example, DNS server certificate might include
+              SRV-ID "_domain-s.example.net" along with DNS-ID "example.net".
+              This specification defines SRV service label "domain-s" in <xref
+              target="IANA"></xref>. As a reminder, the protocol component is
+              not included in the SRV-ID <xref target="RFC4985"></xref>.</t>
+            </list></t>
+        </list></t>
+    </section>
+
+    <section anchor="bootstrap-iot" title="Bootstrapping IoT Devices and CPE">
+      <t>The following steps explain the mechanism to automatically bootstrap
+      IoT devices with local network's CA certificates and DNS server
+      certificate. The below steps can also be used by CPE acting as DNS
+      forwarders to discover and authenticate DNS-over-(D)TLS and
+      DNS-over-HTTPS servers provided by the access networks.<list
+          style="symbols">
+          <t>The IoT device can use BRSKI discussed in <xref
           target="I-D.ietf-anima-bootstrapping-keyinfra"></xref> to
           automatically bootstrap the IoT device using the IoT manufacturer
           provisioned X.509 certificate, in combination with a registrar
@@ -245,62 +315,21 @@
               registrar operating as a BRSKI-EST server. The IoT devices
               stores the CA certificates as Explicit Trust Anchor database
               entries. The IoT device uses the Explicit Trust Anchor database
-              to validate the DNS server certificate. </t>
+              to validate the DNS server certificate.</t>
 
-              <t>TBD: The IoT device learns the End-Entity certificates <xref
+              <t>The IoT device learns the End-Entity certificates <xref
               target="RFC8295"></xref> from the BRSKI-EST server. The
               certificate provisioned to the DNS server in the local network
               will be treated as a End-Entity certificate. The IoT device
-              needs to identify the End-Entity certificate provisioned to the
-              DNS server. The key usage extension <xref
-              target="RFC5280"></xref> can be used to restrict the use of the
-              End-Entity certificate to authenticate the DNS server, a new bit
-              will be added to the KeyUsage type to identify the DNS server
-              certificate.</t>
+              needs to identify the certificate provisioned to the DNS server.
+              The SRV-ID identifier type <xref target="RFC6125"></xref> within
+              subjectAltName entry can be used to identify the DNS server
+              certificate. For example, DNS server certificate might include
+              SRV-ID "_domain-s.example.net" along with DNS-ID "example.net".
+              This specification defines SRV service label "domain-s" in <xref
+              target="IANA"></xref>. As a reminder, the protocol component is
+              not included in the SRV-ID <xref target="RFC4985"></xref>.</t>
             </list></t>
-        </list></t>
-    </section>
-
-    <section anchor="bootstrap-endpoint"
-             title="Bootstrapping Endpoint Devices">
-      <t>The following steps explain the mechanism to automatically bootstrap
-      an endpoint with the local network's CA certificates and DNS server
-      certificate: <list style="numbers">
-          <t>The endpoint authenticates to the local network and establishes
-          provisional TLS connection with the registrar operating as the
-          BRSKI-EST server. The endpoint discovers registrar using DNS-based
-          Service Discovery <xref target="RFC6763"></xref>.</t>
-
-          <t>The endpoint uses Salted Challenge Response Authentication
-          Mechanism (SCRAM) <xref target="RFC7804"></xref> to perform mutual
-          authentication with the discovered BRSKI-EST server. SCRAM provides
-          a more robust authentication mechanism than a plaintext password
-          protected by Transport Layer Security (TLS).</t>
-
-          <t>If the BRSKI-EST server authentication is successful, the
-          endpoint requests the full EST distribution of current CA
-          certificates and validates the provisional TLS connection to the
-          BRSKI-EST server. If the BRSKI-EST server certificate cannot be
-          verified using the CA certificates downloaded, the TLS connection is
-          immediately discarded and the endpoint abandons the attempt to
-          bootstrap from the BRSKI-EST server and discards the CA certificates
-          conveyed by the BRSKI-EST server. The endpoint stores the CA
-          certificates as Explicit Trust Anchor database entries. The endpoint
-          uses the Explicit Trust Anchor database to validate the DNS server
-          certificate. The endpoint needs to perform SCRAM authentication the
-          first time it connects BRSKI-EST server. On subsequent connections
-          to the BRSKI-EST server, the endpoint can validate the BRSKI-EST
-          server certificate using the Explicit Trust Anchor database.</t>
-
-          <t>TBD: The endpoint learns the End-Entity certificates <xref
-          target="RFC8295"></xref> from the BRSKI-EST server. The certificate
-          provisioned to the DNS server in the local network will be treated
-          as a End-Entity certificate. The endpoint needs to identify the
-          End-Entity certificate provisioned to the DNS server. The key usage
-          extension <xref target="RFC5280"></xref> can be used to restrict the
-          use of the End-Entity certificate to authenticate the DNS server, a
-          new bit will be added to the KeyUsage type to identify the DNS
-          server certificate.</t>
         </list></t>
     </section>
 
@@ -367,7 +396,7 @@
         for the DNS server, an S-NAPTR lookup with 'DPRIVE' application
         service and the desired protocol tag is made to obtain information
         necessary to securely connect to the DNS server. The S-NAPTR lookup is
-        performed using an untrusted recursive DNS resolver from an untrusted
+        performed using an recursive DNS resolver discovered from an untrusted
         source (such as DHCP).</t>
 
         <t>This specification defines "DPRIVE" as an application service tag
@@ -388,13 +417,13 @@
       <t>The DNS client initiates (D)TLS handshake with the DNS server, the
       server presents its certificate in ServerHello message, and the DNS
       client matches the DNS server certificate downloaded in step 4 in <xref
-      target="bootstrap-iot"></xref> and <xref
-      target="bootstrap-endpoint"></xref> with the certificate provided by the
-      DNS server in (D)TLS handshake. If the match is successful, the DNS
-      client validates the server certificate using the Explicit Trust Anchor
+      target="bootstrap-endpoint"></xref> and <xref
+      target="bootstrap-iot"></xref> with the certificate provided by the DNS
+      server in (D)TLS handshake. If the match is successful, the DNS client
+      validates the server certificate using the Explicit Trust Anchor
       database entries downloaded in step 3 in <xref
-      target="bootstrap-iot"></xref> and <xref
-      target="bootstrap-endpoint"></xref>. </t>
+      target="bootstrap-endpoint"></xref> and <xref
+      target="bootstrap-iot"></xref>. </t>
 
       <t>If the match is successful and server certificate is successfully
       validated, the client continues with the connection as normal.
@@ -409,7 +438,7 @@
       <t>The bootstrapping procedure to discover and authenticate
       DNS-over-(D)TLS and DNS-over-HTTPS Servers MUST be enabled by the
       endpoint in a trusted network (e.g. Enterprise, Secure home networks)
-      and disabled in a untrusted network (e.g. public WiFi network), similar
+      and disabled in a untrusted network (e.g. Public WiFi network), similar
       to the way VPN connection from the endpoint to a VPN gateway is
       disconnected in a trusted network and VPN connection is established in a
       untrusted network.</t>
@@ -429,14 +458,13 @@
       against DNS-vectored attacks, secured DNS (DNSSEC) can be used to ensure
       the validity of the DNS records received. The explicit trust anchor
       database entries downloaded in step 3 in <xref
-      target="bootstrap-iot"></xref> and <xref
-      target="bootstrap-endpoint"></xref> can be used by the endpoint to
-      validate the DNSSEC signature. Impersonation of the DNS server is
-      prevented by validating the certificate presented by the DNS server. If
-      the BRSKI-EST server conveys the DNS server certificate, but the S-NAPTR
-      lookup indicates that the DNS server does not support any
-      privacy-enabling protocols, the client can detect the DNS response is
-      spoofed. </t>
+      target="bootstrap-endpoint"></xref> and <xref
+      target="bootstrap-iot"></xref> can be used by the endpoint to validate
+      the DNSSEC signature. Impersonation of the DNS server is prevented by
+      validating the certificate presented by the DNS server. If the BRSKI-EST
+      server conveys the DNS server certificate, but the S-NAPTR lookup
+      indicates that the DNS server does not support any privacy-enabling
+      protocols, the client can detect the DNS response is spoofed. </t>
 
       <t>Security considerations in <xref
       target="I-D.ietf-anima-bootstrapping-keyinfra"></xref> and <xref
@@ -529,8 +557,6 @@
 
       <?rfc include="reference.RFC.8295"?>
 
-      <?rfc include="reference.RFC.5280"?>
-
       <?rfc include="reference.RFC.7804"?>
 
       <?rfc include="reference.RFC.8484"?>
@@ -551,6 +577,8 @@
 
       <?rfc include="reference.RFC.6347"?>
 
+      <?rfc include="reference.RFC.4985"?>
+
       <?rfc include='reference.I-D.ietf-anima-bootstrapping-keyinfra'?>
     </references>
 
@@ -559,7 +587,11 @@
 
       <?rfc include="reference.RFC.2775"?>
 
+      <?rfc include="reference.RFC.7871"?>
+
       <?rfc include='reference.I-D.ietf-opsawg-mud'?>
+
+      <?rfc include='reference.I-D.camwinget-tls-use-cases'?>
 
       <reference anchor="CDN"
                  target="https://conferences.sigcomm.org/sigcomm/2015/pdf/papers/p167.pdf">
