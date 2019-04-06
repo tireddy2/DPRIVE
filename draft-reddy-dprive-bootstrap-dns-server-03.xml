@@ -10,7 +10,7 @@
 <?rfc inline="yes"?>
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
-<rfc category="std" docName="draft-reddy-dprive-bootstrap-dns-server-02"
+<rfc category="std" docName="draft-reddy-dprive-bootstrap-dns-server-03"
      ipr="trust200902">
   <front>
     <title abbrev="DoT/DoH server discovery">A Bootstrapping Procedure to
@@ -86,7 +86,7 @@
       </address>
     </author>
 
-    <date day="26" month="March" year="2019" />
+    <date day="2" month="April" year="2019" />
 
     <workgroup>DPRIVE WG</workgroup>
 
@@ -188,8 +188,7 @@
       steps:<list style="symbols">
           <t>Bootstrapping phase (<xref target="bootstrap-endpoint"></xref>
           and <xref target="bootstrap-iot"></xref>) is meant to automatically
-          bootstrap endpoints with local network's CA certificates and DNS
-          server certificate.</t>
+          bootstrap endpoints with local network's DNS server certificate.</t>
 
           <t>Discovery phase (<xref target="discovery"></xref>) is meant to
           discover the privacy-enabling protocols supported by the DNS server
@@ -206,6 +205,16 @@
       <xref target="RFC8310"></xref> only applies to DNS-over-(D)TLS
       protocols, there has been no such distinction made for DNS-over-HTTPS
       protocol.</t>
+    </section>
+
+    <section anchor="scope" title="Scope">
+      <t>The aforementioned problems will be encountered in Enterprise
+      networks. Typically Enterprise networks do not assume that all devices
+      in their network are managed by the IT team or Mobie Device Management
+      (MDM) devices, especially in the quite common BYOD ("Bring Your Own
+      Device") scenario. The mechanisms proposed in the specification can be
+      used by BYOD devices to discover and authenticate DNS-over-(D)TLS and
+      DNS-over-HTTPS servers provided by the trusted Enterprise network. </t>
     </section>
 
     <section anchor="notation" title="Terminology">
@@ -227,66 +236,63 @@
     <section anchor="bootstrap-endpoint"
              title="Bootstrapping Endpoint Devices">
       <t>The following steps explain the mechanism to automatically bootstrap
-      an endpoint with the local network's CA certificates and DNS server
-      certificate: <list style="numbers">
+      an endpoint with the local network's DNS server certificate: <list
+          style="numbers">
           <t>The endpoint authenticates to the local network and discovers the
-          EST server using DNS-based Service Discovery <xref
-          target="RFC6763"></xref>.</t>
+          EST server using the procedure discussed in <xref
+          target="EST_Discovery"></xref>.</t>
 
           <t>The endpoint establishes provisional TLS connection with the EST
           server, i.e. the endpoint provisionally accepts the unverified TLS
           server certificate. However, the endpoint MUST authenticate the EST
-          server before it can accept the CA certificates. The endpoint either
-          uses Secure Remote Password protocol (SRP) <xref
-          target="SRP-6"></xref> as an authentication method for the Transport
-          Layer Security protocol <xref target="RFC5054"></xref> or uses the
-          mutual authentication scheme discussed in <xref
-          target="RFC8120"></xref> to authenticate the discovered EST server.
-          SRP is an authentication method that allows the use of usernames and
-          passwords over unencrypted channels without revealing the password
-          to an eavesdropper. Similarty, the mutual authentication scheme is
-          based on password-based authenticated key exchange (PAKE) and
-          provides mutual authentication between a HTTP client and an HTTP
-          server using username and password as credentials.</t>
+          server before it can accept the DNS server certificate. The endpoint
+          either uses password-based authenticated key exchange (PAKE) with
+          TLS 1.3 <xref target="I-D.barnes-tls-pake"></xref> as an
+          authentication method or uses the mutual authentication protocol for
+          HTTP <xref target="RFC8120"> </xref> to authenticate the discovered
+          EST server. PAKE is an authentication method that allows the use of
+          usernames and passwords over unencrypted channels without revealing
+          the passwords to an eavesdropper. Similarty, the mutual
+          authentication for Hypertext Transfer Protocol (HTTP) is based on
+          PAKE and provides mutual authentication between a HTTP client and an
+          HTTP server using username and password as credentials. The
+          cryptographic algorithms to use with the mutual authentication
+          protocol for HTTP are defined in <xref target="RFC8121"></xref>.
+          </t>
 
-          <t>If the EST server authentication is successful, the endpoint
-          requests the full EST distribution of current CA certificates and
-          validates the EST server certificate. If the EST server certificate
-          cannot be verified using the CA certificates downloaded, the TLS
-          connection is immediately discarded and the endpoint abandons the
-          attempt to bootstrap from the EST server and discards the CA
-          certificates conveyed by the EST server. If the EST server
-          certificate is verified using the CA certificates downloaded, the
-          endpoint stores the CA certificates as Explicit Trust Anchor
-          database entries. The endpoint uses the Explicit Trust Anchor
-          database to validate the DNS server certificate. The endpoint needs
-          to perform SCRAM authentication the first time it connects EST
-          server. On subsequent connections to the EST server, the endpoint
-          can validate the EST server certificate using the Explicit Trust
-          Anchor database.</t>
+          <t>The endpoint needs to use PAKE scheme to perform authentication
+          the first time it connects EST server. If the EST server
+          authentication is successful, the server's identity can be used to
+          authenticate subsequent TLS connections to the EST server. The
+          endpoint generates the reference identifier for the EST server using
+          the DNS-ID identifier type in the EST server certificate. On
+          subsequent connections to the EST server, the endpoint can validate
+          the EST server certificate using the Implict Trust Anchor database
+          and matches the reference identifier against the EST server's
+          identity according to the rules specified in Section 6.4 of <xref
+          target="RFC6125"></xref>. </t>
 
           <t>The endpoint learns the End-Entity certificates <xref
           target="RFC8295"></xref> from the EST server. The certificate
           provisioned to the DNS server in the local network will be treated
-          as a End-Entity certificate. The endpoint needs to identify the
-          certificate provisioned to the DNS server. The SRV-ID identifier
-          type <xref target="RFC6125"></xref> within subjectAltName entry can
-          be used to identify the DNS server certificate. For example, DNS
-          server certificate will include SRV-ID "_domain-s.example.net" along
-          with DNS-ID "example.net". This specification defines SRV service
-          label "domain-s" in <xref target="IANA"></xref>. As a reminder, the
-          protocol component is not included in the SRV-ID <xref
-          target="RFC4985"></xref>.</t>
+          as a End-Entity certificate. As a reminder, the End-Entity
+          certificates must be validated by the endpoint using a authorized
+          trust anchor (Section 3.2 of <xref target="RFC8295"></xref>). The
+          endpoint needs to identify the certificate provisioned to the DNS
+          server. The SRV-ID identifier type <xref target="RFC6125"></xref>
+          within subjectAltName entry can be used to identify the DNS server
+          certificate. For example, DNS server certificate will include SRV-ID
+          "_domain-s.example.net" along with DNS-ID "example.net". The SRV
+          service label "domain-s" is defined in Section 6 of <xref
+          target="RFC7858"></xref>. As a reminder, the protocol component is
+          not included in the SRV-ID <xref target="RFC4985"></xref>.</t>
         </list></t>
     </section>
 
-    <section anchor="bootstrap-iot" title="Bootstrapping IoT Devices and CPE">
+    <section anchor="bootstrap-iot" title="Bootstrapping IoT Devices">
       <t>The following steps explain the mechanism to automatically bootstrap
       IoT devices with local network's CA certificates and DNS server
-      certificate. The below steps can also be used by CPE acting as DNS
-      forwarder to discover and authenticate DNS-over-(D)TLS and
-      DNS-over-HTTPS servers provided by the access network.<list
-          style="symbols">
+      certificate. <list style="symbols">
           <t>Bootstrapping Remote Secure Key Infrastructures (BRSKI) discussed
           in <xref target="I-D.ietf-anima-bootstrapping-keyinfra"></xref>
           provides a solution for secure automated bootstrap of devices. BRSKI
@@ -334,7 +340,8 @@
         </list></t>
     </section>
 
-    <section anchor="discovery" title="Discovery Procedure">
+    <section anchor="discovery"
+             title="DNS-over-(D)TLS and DNS-over-HTTPS Server Discovery Procedure">
       <t>A DNS client discovers the DNS server in the local network supporting
       DNS-over-TLS, DNS-over-DTLS and DNS-over-HTTPS protocols by using the
       following discovery mechanism:</t>
@@ -415,10 +422,8 @@
       target="bootstrap-endpoint"></xref> and <xref
       target="bootstrap-iot"></xref> with the certificate provided by the DNS
       server in (D)TLS handshake. If the match is successful, the DNS client
-      validates the server certificate using the Explicit Trust Anchor
-      database entries downloaded in step 3 in <xref
-      target="bootstrap-endpoint"></xref> and <xref
-      target="bootstrap-iot"></xref>.</t>
+      validates the server certificate using the Implicit Trust Anchor
+      database.</t>
 
       <t>If the match is successful and server certificate is successfully
       validated, the client continues with the connection as normal.
@@ -429,14 +434,155 @@
       client can fallback to the privacy-enabling public DNS server.</t>
     </section>
 
+    <section anchor="EST_Discovery" title="EST service Discovery Procedure">
+      <t>DNS-based Service Discovery (DNS-SD) <xref target="RFC6763"></xref>
+      and Multicast DNS (mDNS) <xref target="RFC6762"></xref> provide generic
+      solutions for discovering services available in a local network.
+      DNS-SD/mDNS define a set of naming rules for certain DNS record types
+      that they use for advertising and discovering services.</t>
+
+      <t>Section 4.1 of <xref target="RFC6763"></xref> specifies that a
+      service instance name in DNS-SD has the following structure:</t>
+
+      <t>&lt;Instance&gt; . &lt;Service&gt; . &lt;Domain&gt;</t>
+
+      <t>The &lt;Domain&gt; portion specifies the DNS sub-domain where the
+      service instance is registered. It may be "local.", indicating the mDNS
+      local domain, or it may be a conventional domain name such as
+      "example.com.". The &lt;Service&gt; portion of the EST service instance
+      name MUST be "_est._tcp".</t>
+
+      <section title="mDNS">
+        <t>A EST client application can proactively discover EST server being
+        advertised in the site by multicasting a PTR query to the
+        following:</t>
+
+        <t><list style="symbols">
+            <t>"_est._tcp.local"</t>
+          </list>A EST server can send out gratuitous multicast DNS answer
+        packets whenever it starts up, wakes from sleep, or detects a change
+        in EST server configuration. EST client application receive these
+        gratuitous packets and cache information contained in it.</t>
+      </section>
+    </section>
+
+    <section anchor="privacy" title="Privacy Considerations">
+      <t><xref target="RFC7626"></xref> discusses DNS privacy considerations
+      in both "on the wire" (Section 2.4 of <xref target="RFC7626"></xref>)
+      and "in the server" (Section 2.5 of <xref target="RFC7626"></xref>
+      contexts. The endpoint may not know if the DNS-over-(D)TLS or
+      DNS-over-HTTPS server in the local network has a privacy preserving data
+      policy. A new privacy certificate extension is defined that identifies
+      the privacy preserving data policy of the DNS server. </t>
+
+      <section title="Privacy Extension Format">
+        <t>Like all X.509 certificate extensions, the privacy certificate
+        extension is defined using ASN.1 <xref target="ASN1-88"></xref>. The
+        non-critical privacy extension is identified by id-pe-privacy.</t>
+
+        <t><figure>
+            <preamble></preamble>
+
+            <artwork><![CDATA[   PKIX Object Identifier Registry
+
+   id-pkix OBJECT IDENTIFIER ::= { iso(1) identified-organization(3)
+              dod(6) internet(1) security(5) mechanisms(5) pkix(7) }
+
+   PKIX Arcs
+   id-mod  OBJECT IDENTIFIER ::= { id-pkix 0 }    -- modules
+   id-pe   OBJECT IDENTIFIER ::= { id-pkix 1 }    -- private
+   certificate extensions
+
+   PKIX modules
+   id-mod-privacy-extn         OBJECT IDENTIFIER ::= { id-mod TBD2 }
+   id-pe-privacy OBJECT IDENTIFIER  ::=  { id-pe TBD1 }
+]]></artwork>
+
+            <postamble></postamble>
+          </figure></t>
+
+        <t>A non-null privacy always includes a base privacy. The privacy
+        extension includes the following information:<list style="symbols">
+            <t>If the client IP address is Personally Identifiable Information
+            (PII) data or non PII-data.</t>
+
+            <t>If the client IP address is logged or not, and if client IP
+            address is indeed logged, it is stored in temporary or permanant
+            logs.</t>
+
+            <t>If the server clears the stored transaction data (e.g. DNS
+            messages) or not, and if the server clears the stored transaction
+            data, the period for which the transaction data is stored.</t>
+
+            <t>If the transaction data is shared with partners or not, and if
+            the transaction data is shared with partners, the names of the
+            partners. If anonymized data or client identifiable data is shared
+            with partners.</t>
+
+            <t>If the transaction data is shared or sold to third parties.</t>
+
+            <t>If the DNS server will block DNS resolution of certain domains
+            (e.g. malicious domains).</t>
+
+            <t>A URL that points to the privacy preserving data policy, and a
+            URL that points to the security assessment report of the DNS
+            server by a third party auditor.</t>
+          </list></t>
+      </section>
+
+      <section title="Privacy Extension Syntax">
+        <t>The syntax for the privacy extension is:</t>
+
+        <t><figure>
+            <preamble></preamble>
+
+            <artwork><![CDATA[   Privacy ::=  CHOICE  {
+     none                 NULL,             -- No privacy policy provided
+     pPolicy              PrivacyPolicy  }  -- Privacy preserving data policy
+
+   PrivacyPolicy ::=  SEQUENCE  {
+     base              PrivacyInfo,
+     pURL         [0]  PrivacyURL OPTIONAL,
+     aURL         [1]  AuditURL OPTIONAL  }
+
+  PrivacyInfo  ::=  SEQUENCE  {
+     ipaddresspii      BOOLEAN,  -- TRUE means client IP address is PII
+     log          [0]  Logging, 
+     retention    [1]  DataRetention,
+     sdata        [2]  ShareData,
+     transferdata [3]  BOOLEAN,  -- TRUE means share or sell data to third parties
+     blockdomains [4]  BOOLEAN   -- TRUE means domains will be blocked  }
+
+   Logging ::=  SEQUENCE  {
+     logip                BOOLEAN, -- TRUE means client IP address logging
+     temporary            BOOLEAN  OPTIONAL -- TRUE means temporary logs  }
+
+   DataRetention ::=  SEQUENCE  {
+     cleardata            BOOLEAN, -- TRUE means the server clears the stored transaction data 
+     period               INTEGER OPTIONAL -- Number of Hours the transaction data is stored  }
+
+   ShareData ::=  SEQUENCE  {
+     sharepartners        BOOLEAN, -- TRUE means data is shared with partners
+     partners        [1]  SEQUENCE SIZE (1..MAX) OF UTF8String OPTIONAL -- Names of the partners
+     anonymizeddata  [0]  BOOLEAN OPTIONAL, -- TRUE means anonymized data is shared with partners  }
+ 
+   PrivacyURL  ::=  IA5String  -- MUST use https scheme
+   AuditURL    ::=  IA5String  -- MUST use https scheme
+]]></artwork>
+
+            <postamble></postamble>
+          </figure></t>
+      </section>
+    </section>
+
     <section anchor="Security" title="Security Considerations">
       <t>The bootstrapping procedure to discover and authenticate
       DNS-over-(D)TLS and DNS-over-HTTPS Servers MUST be enabled by the
-      endpoint in a trusted network (e.g. Enterprise, Secure home networks)
-      and disabled in a untrusted network (e.g. Public WiFi network), similar
-      to the way VPN connection from the endpoint to a VPN gateway is
-      disconnected in a trusted network and VPN connection is established in a
-      untrusted network.</t>
+      endpoint in a trusted network (e.g. Enterprise network) and disabled in
+      a untrusted network (e.g. Public WiFi network), similar to the way VPN
+      connection from the endpoint to a VPN gateway is disconnected in a
+      trusted network and VPN connection is established in a untrusted
+      network.</t>
 
       <t>If the endpoint has enabled strict privacy profile, and the network
       security service blocks the traffic to the privacy-enabling public DNS
@@ -451,79 +597,50 @@
       of a DNS server and spoofing the DNS response to indicate that the DNS
       server does not support any privacy-enabling protocols. To protect
       against DNS-vectored attacks, secured DNS (DNSSEC) can be used to ensure
-      the validity of the DNS records received. The explicit trust anchor
-      database entries downloaded in step 3 in <xref
-      target="bootstrap-endpoint"></xref> and <xref
-      target="bootstrap-iot"></xref> can be used by the endpoint to validate
-      the DNSSEC signature. Impersonation of the DNS server is prevented by
-      validating the certificate presented by the DNS server. If the BRSKI-EST
-      server conveys the DNS server certificate, but the S-NAPTR lookup
-      indicates that the DNS server does not support any privacy-enabling
-      protocols, the client can detect the DNS response is spoofed.</t>
+      the validity of the DNS records received. Impersonation of the DNS
+      server is prevented by validating the certificate presented by the DNS
+      server. If the EST server conveys the DNS server certificate, but the
+      S-NAPTR lookup indicates that the DNS server does not support any
+      privacy-enabling protocols, the client can detect the DNS response is
+      spoofed.</t>
 
       <t>Security considerations in <xref
       target="I-D.ietf-anima-bootstrapping-keyinfra"></xref>, <xref
-      target="RFC5054"></xref> and <xref target="RFC8120"></xref> need to be
-      taken into consideration.</t>
-    </section>
-
-    <section anchor="privacy" title="Privacy Considerations">
-      <t><xref target="RFC7626"></xref> discusses DNS privacy considerations
-      in both "on the wire" (Section 2.4 of <xref target="RFC7626"></xref>)
-      and "in the server" (Section 2.5 of <xref target="RFC7626"></xref>
-      contexts. The endpoint may not know if the DNS-over-(D)TLS or
-      DNS-over-HTTPS server in the local network has a privacy preserving data
-      policy. A new privacy certificate extension is defined that identifies
-      the privacy preserving data policy of the DNS server. The extension
-      contains a URL that points to the privacy preserving data policy.</t>
-
-      <section title="Privacy Extension Syntax">
-        <t>The syntax for the privacy extension is:</t>
-
-        <t><figure>
-            <preamble></preamble>
-
-            <artwork><![CDATA[   Privacy ::=  CHOICE  {
-     none                 NULL,             -- No privacy policy provided
-     pPolicy              PrivacyPolicy  }  -- Privacy preserving data policy
-
-   PrivacyPolicy ::=  SEQUENCE  {
-     base                 PrivacyInfo,
-     pURL                 PrivacyURL }
-
-  PrivacyInfo  ::=  SEQUENCE  {
-     piidata           BOOLEAN,  -- TRUE means client IP address (PII data) will not be retained
-     log               LoggingIP, 
-     retention         DataRetention,
-     sdata             ShareData,
-     transferdata      BOOLEAN,  -- TRUE means share or sell data to third parties
-     blockdomains      BOOLEAN,  -- TRUE means domains will be blocked
-     pURL              PrivacyURL }
-
-   LoggingIP ::=  SEQUENCE  {
-     logip                BOOLEAN, -- TRUE means IP address logging
-     temporary            BOOLEAN  -- TRUE means temporary logs }
-
-   DataRetention ::=  SEQUENCE  {
-     cleardata            BOOLEAN, -- TRUE means the server clears the stored transaction data 
-     period               INTEGER  -- Number of Hours the transaction data is stored }
-
-   ShareData ::=  SEQUENCE  {
-     sharepartners        BOOLEAN, -- TRUE means data is shared with partners
-     partners             IA5String -- Names of the partners 
-     anonymizeddata       BOOLEAN  -- TRUE means anonymized data is shared with partners }
-  
-  PrivacyURL  ::=  IA5String  -- MUST use https scheme
-]]></artwork>
-
-            <postamble></postamble>
-          </figure></t>
-      </section>
+      target="I-D.barnes-tls-pake"></xref> and <xref target="RFC8120"></xref>
+      need to be taken into consideration.</t>
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
-      <t>IANA is requested to allocate the SRV service name of "domain-s" for
-      DNS-over-(D)TLS and DNS-over-HTTPS.</t>
+      <t>IANA is requested to allocate the SRV service name of "est". IANA is
+      requested to add the following entry in the "SMI Security for PKIX
+      Certificate Extension" (1.3.6.1.5.5.7.1) registry: </t>
+
+      <t><figure>
+          <preamble></preamble>
+
+          <artwork><![CDATA[   Decimal  Description                     References
+   -------  ------------------------------  ---------------------
+
+     TBD1     id-pe-privacy                   this document 
+]]></artwork>
+
+          <postamble></postamble>
+        </figure></t>
+
+      <t>IANA is requested to add the following entry in the "SMI Security for
+      PKIX Module Identifier" (1.3.6.1.5.5.7.0) registry: </t>
+
+      <t><figure>
+          <preamble></preamble>
+
+          <artwork><![CDATA[   Decimal  Description                     References
+   -------  ------------------------------  ---------------------
+
+     TBD2     id-mod-privacy-extn           this document 
+]]></artwork>
+
+          <postamble></postamble>
+        </figure></t>
 
       <section anchor="tag"
                title="Application Service &amp; Application Protocol Tags">
@@ -626,13 +743,17 @@
 
       <?rfc include="reference.RFC.4985"?>
 
-      <?rfc include="reference.RFC.5054"?>
-
       <?rfc include="reference.RFC.8120"?>
+
+      <?rfc include="reference.RFC.8121"?>
+
+      <?rfc include="reference.RFC.6762"?>
 
       <?rfc include='reference.I-D.ietf-anima-bootstrapping-keyinfra'?>
 
       <?rfc include='reference.I-D.ietf-doh-resolver-associated-doh'?>
+
+      <?rfc include='reference.I-D.barnes-tls-pake'?>
     </references>
 
     <references title="Informative References">
@@ -662,16 +783,17 @@
         </front>
       </reference>
 
-      <reference anchor="SRP-6" target="http://grouper.ieee.org/groups/1363/">
+      <reference anchor="ASN1-88" target="">
         <front>
-          <title>SRP-6: Improvements and Refinements to the Secure Remote
-          Password Protocol</title>
+          <title>International Telephone and Telegraph Consultative Committee,
+          "Specification of Abstract Syntax Notation One (ASN.1)", CCITT
+          Recommendation X.208, 1988.</title>
 
-          <author fullname="">
+          <author>
             <organization></organization>
           </author>
 
-          <date month="October" year="2002" />
+          <date year="" />
         </front>
       </reference>
     </references>
