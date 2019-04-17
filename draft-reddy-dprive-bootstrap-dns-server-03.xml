@@ -186,19 +186,27 @@
       DNS-over-(D)TLS and DNS-over-HTTPS servers provided by the local
       network. The overall procedure can be structured into the following
       steps:<list style="symbols">
-          <t>Bootstrapping phase (<xref target="bootstrap-endpoint"></xref>
-          and <xref target="bootstrap-iot"></xref>) is meant to automatically
-          bootstrap endpoints with local network's DNS server certificate.</t>
+          <t><xref target="bootstrap-endpoint">Bootstrapping</xref> is
+          necessary only when connecting to a new network or when the
+          network's DNS certificate has changed. Bootstrapping authenticates
+          the network server to the endpoint. After authenticating the network
+          server, DNS server certificate used by the local network is
+          downloaded to the endpoint. This DNS server certificate enables
+          subsequent authenticated encrypted communication with the local DNS
+          server (e.g., DNS-over-HTTPS) in the connection phase.</t>
 
-          <t>Discovery phase (<xref target="discovery"></xref>) is meant to
-          discover the privacy-enabling protocols supported by the DNS server
-          and usable DNS server IP addresses and port numbers.</t>
+          <t><xref target="discovery">Discovery</xref> is performed whenever
+          connecting to a network that was previously Bootstrapped. During
+          discovery, the endpoint is told which privacy-enabling DNS
+          protocols, port numbers, and IP addresses are supported on the local
+          network. This effectively takes the place of DNS server IP address
+          traditionally provided by IPv4 or IPv6 DHCP or by <xref
+          target="RFC6106">IPv6 Router Advertisement</xref>.</t>
 
           <t>Connection handshake and service invocation: The DNS client
-          initiates (D)TLS handshake with the DNS server learned in the
-          discovery phase. Furthermore, DNS client uses the credentials
-          discovered during the bootstrapping phase to validate the server
-          certificate.</t>
+          initiates a (D)TLS handshake with the DNS server learned in the
+          discovery phase, and validates the DNS server's identity using the
+          credentials obtained in the bootstrapping phase.</t>
         </list></t>
 
       <t>Note: The strict and opportunistic privacy profiles as defined in
@@ -214,7 +222,10 @@
       (MDM) devices, especially in the quite common BYOD ("Bring Your Own
       Device") scenario. The mechanisms proposed in the specification can be
       used by BYOD devices to discover and authenticate DNS-over-(D)TLS and
-      DNS-over-HTTPS servers provided by the trusted Enterprise network. </t>
+      DNS-over-HTTPS servers provided by the Enterprise network. The proposed
+      mechanism can also be used by IoT devices (managed by IT team) after
+      onboarding to discover and authenticate DNS-over-(D)TLS and
+      DNS-over-HTTPS servers provided by the Enterprise network.</t>
     </section>
 
     <section anchor="notation" title="Terminology">
@@ -257,8 +268,7 @@
           PAKE and provides mutual authentication between a HTTP client and an
           HTTP server using username and password as credentials. The
           cryptographic algorithms to use with the mutual authentication
-          protocol for HTTP are defined in <xref target="RFC8121"></xref>.
-          </t>
+          protocol for HTTP are defined in <xref target="RFC8121"></xref>.</t>
 
           <t>The endpoint needs to use PAKE scheme to perform authentication
           the first time it connects EST server. If the EST server
@@ -270,7 +280,7 @@
           the EST server certificate using the Implict Trust Anchor database
           and matches the reference identifier against the EST server's
           identity according to the rules specified in Section 6.4 of <xref
-          target="RFC6125"></xref>. </t>
+          target="RFC6125"></xref>.</t>
 
           <t>The endpoint learns the End-Entity certificates <xref
           target="RFC8295"></xref> from the EST server. The certificate
@@ -473,7 +483,7 @@
       contexts. The endpoint may not know if the DNS-over-(D)TLS or
       DNS-over-HTTPS server in the local network has a privacy preserving data
       policy. A new privacy certificate extension is defined that identifies
-      the privacy preserving data policy of the DNS server. </t>
+      the privacy preserving data policy of the DNS server.</t>
 
       <section title="Privacy Extension Format">
         <t>Like all X.509 certificate extensions, the privacy certificate
@@ -576,13 +586,19 @@
     </section>
 
     <section anchor="Security" title="Security Considerations">
-      <t>The bootstrapping procedure to discover and authenticate
-      DNS-over-(D)TLS and DNS-over-HTTPS Servers MUST be enabled by the
-      endpoint in a trusted network (e.g. Enterprise network) and disabled in
-      a untrusted network (e.g. Public WiFi network), similar to the way VPN
-      connection from the endpoint to a VPN gateway is disconnected in a
-      trusted network and VPN connection is established in a untrusted
-      network.</t>
+      <t>The bootstrapping procedure to obtain the certificate of the local
+      networks DNS server uses a client identity and password to authenticate
+      the EST server using PAKE schemes. Security considerations in <xref
+      target="I-D.barnes-tls-pake"></xref> and <xref target="RFC8120"></xref>
+      need to be taken into consideration.</t>
+
+      <t>Users cannot be expected to enable or disable the bootstrapping or
+      the discovery procedure as they switch networks. Thus, it is RECOMMENDED
+      that users indicate to their system in some way that they desire
+      bootstrapping to be performed when connecting to a specific network,
+      similar to the way users disable VPN connection in specific network
+      (e.g. Enterprise network) and enable VPN connection by default in other
+      networks.</t>
 
       <t>If the endpoint has enabled strict privacy profile, and the network
       security service blocks the traffic to the privacy-enabling public DNS
@@ -605,15 +621,14 @@
       spoofed.</t>
 
       <t>Security considerations in <xref
-      target="I-D.ietf-anima-bootstrapping-keyinfra"></xref>, <xref
-      target="I-D.barnes-tls-pake"></xref> and <xref target="RFC8120"></xref>
-      need to be taken into consideration.</t>
+      target="I-D.ietf-anima-bootstrapping-keyinfra"></xref> need to be taken
+      into consideration.</t>
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
       <t>IANA is requested to allocate the SRV service name of "est". IANA is
       requested to add the following entry in the "SMI Security for PKIX
-      Certificate Extension" (1.3.6.1.5.5.7.1) registry: </t>
+      Certificate Extension" (1.3.6.1.5.5.7.1) registry:</t>
 
       <t><figure>
           <preamble></preamble>
@@ -628,7 +643,7 @@
         </figure></t>
 
       <t>IANA is requested to add the following entry in the "SMI Security for
-      PKIX Module Identifier" (1.3.6.1.5.5.7.0) registry: </t>
+      PKIX Module Identifier" (1.3.6.1.5.5.7.0) registry:</t>
 
       <t><figure>
           <preamble></preamble>
@@ -760,6 +775,8 @@
       <?rfc include="reference.RFC.8310"?>
 
       <?rfc include="reference.RFC.2775"?>
+
+      <?rfc include="reference.RFC.6106"?>
 
       <?rfc include="reference.RFC.7871"?>
 
