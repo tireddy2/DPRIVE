@@ -5,7 +5,7 @@
 DPRIVE WG                                                       T. Reddy
 Internet-Draft                                                    McAfee
 Intended status: Standards Track                                 D. Wing
-Expires: October 4, 2019
+Expires: October 4, 2019                                          Citrix
                                                            M. Richardson
                                                 Sandelman Software Works
                                                             M. Boucadair
@@ -976,6 +976,7 @@ Authors' Addresses
 
 
    Dan Wing
+   Citrix
    USA
 
    Email: dan@danwing.org
@@ -994,7 +995,6 @@ Authors' Addresses
    France
 
    Email: mohamed.boucadair@orange.com
-
 
 
 
