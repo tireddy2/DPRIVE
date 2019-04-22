@@ -210,10 +210,10 @@ Internet-Draft          DoT/DoH server discovery              April 2019
       traditionally provided by IPv4 or IPv6 DHCP or by IPv6 Router
       Advertisement [RFC6106].
 
-   o  Connection handshake and service invocation: The DNS client
-      initiates a (D)TLS handshake with the DNS server learned in the
-      discovery phase, and validates the DNS server's identity using the
-      credentials obtained in the bootstrapping phase.
+   o  Connection handshake and service invocation (Section 7): The DNS
+      client initiates a (D)TLS handshake with the DNS server learned in
+      the discovery phase, and validates the DNS server's identity using
+      the credentials obtained in the bootstrapping phase.
 
    Note: The strict and opportunistic privacy profiles as defined in
    [RFC8310] only applies to DNS-over-(D)TLS protocols, there has been
@@ -230,7 +230,7 @@ Internet-Draft          DoT/DoH server discovery              April 2019
 
    The aforementioned problems will be encountered in Enterprise
    networks.  Typically Enterprise networks do not assume that all
-   devices in their network are managed by the IT team or Mobie Device
+   devices in their network are managed by the IT team or Mobile Device
    Management (MDM) devices, especially in the quite common BYOD ("Bring
    Your Own Device") scenario.  The mechanisms proposed in the
    specification can be used by BYOD devices to discover and
@@ -308,9 +308,9 @@ Internet-Draft          DoT/DoH server discovery              April 2019
        the endpoint using a authorized trust anchor (Section 3.2 of
        [RFC8295]).  The endpoint needs to identify the certificate
        provisioned to the DNS server.  The SRV-ID identifier type
-       [RFC6125] within subjectAltName entry can be used to identify the
-       DNS server certificate.  For example, DNS server certificate will
-       include SRV-ID "_domain-s.example.net" along with DNS-ID
+       [RFC6125] within subjectAltName entry MUST be used to identify
+       the DNS server certificate.  For example, DNS server certificate
+       will include SRV-ID "_domain-s.example.net" along with DNS-ID
        "example.net".  The SRV service label "domain-s" is defined in
        Section 6 of [RFC7858].  As a reminder, the protocol component is
        not included in the SRV-ID [RFC4985].
@@ -366,12 +366,12 @@ Internet-Draft          DoT/DoH server discovery              April 2019
           DNS server in the local network will be treated as a End-
           Entity certificate.  The IoT device needs to identify the
           certificate provisioned to the DNS server.  The SRV-ID
-          identifier type [RFC6125] within subjectAltName entry can be
+          identifier type [RFC6125] within subjectAltName entry MUST be
           used to identify the DNS server certificate.  For example, DNS
           server certificate will include SRV-ID "_domain-s.example.net"
-          along with DNS-ID "example.net".  This specification defines
-          SRV service label "domain-s" in Section 12.  As a reminder,
-          the protocol component is not included in the SRV-ID
+          along with DNS-ID "example.net".  The SRV service label
+          "domain-s" is defined in Section 6 of [RFC7858].  As a
+          reminder, the protocol component is not included in the SRV-ID
           [RFC4985].
 
 6.  DNS-over-(D)TLS and DNS-over-HTTPS Server Discovery Procedure
@@ -699,9 +699,10 @@ Internet-Draft          DoT/DoH server discovery              April 2019
 
 12.  IANA Considerations
 
-   IANA is requested to allocate the SRV service name of "est".  IANA is
-   requested to add the following entry in the "SMI Security for PKIX
-   Certificate Extension" (1.3.6.1.5.5.7.1) registry:
+   IANA is requested to allocate the SRV service name of "est".
+
+   IANA is requested to add the following entry in the "SMI Security for
+   PKIX Certificate Extension" (1.3.6.1.5.5.7.1) registry:
 
       Decimal  Description                     References
       -------  ------------------------------  ---------------------
@@ -721,7 +722,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    This document requests IANA to make the following allocations from
    the registry available at: https://www.iana.org/assignments/s-naptr-
    parameters/s-naptr-parameters.xhtml.
-
 
 
 

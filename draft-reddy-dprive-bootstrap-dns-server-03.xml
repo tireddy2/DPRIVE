@@ -203,10 +203,11 @@
           traditionally provided by IPv4 or IPv6 DHCP or by <xref
           target="RFC6106">IPv6 Router Advertisement</xref>.</t>
 
-          <t>Connection handshake and service invocation: The DNS client
-          initiates a (D)TLS handshake with the DNS server learned in the
-          discovery phase, and validates the DNS server's identity using the
-          credentials obtained in the bootstrapping phase.</t>
+          <t><xref target="auth">Connection handshake and service
+          invocation</xref>: The DNS client initiates a (D)TLS handshake with
+          the DNS server learned in the discovery phase, and validates the DNS
+          server's identity using the credentials obtained in the
+          bootstrapping phase.</t>
         </list></t>
 
       <t>Note: The strict and opportunistic privacy profiles as defined in
@@ -218,7 +219,7 @@
     <section anchor="scope" title="Scope">
       <t>The aforementioned problems will be encountered in Enterprise
       networks. Typically Enterprise networks do not assume that all devices
-      in their network are managed by the IT team or Mobie Device Management
+      in their network are managed by the IT team or Mobile Device Management
       (MDM) devices, especially in the quite common BYOD ("Bring Your Own
       Device") scenario. The mechanisms proposed in the specification can be
       used by BYOD devices to discover and authenticate DNS-over-(D)TLS and
@@ -291,7 +292,7 @@
           trust anchor (Section 3.2 of <xref target="RFC8295"></xref>). The
           endpoint needs to identify the certificate provisioned to the DNS
           server. The SRV-ID identifier type <xref target="RFC6125"></xref>
-          within subjectAltName entry can be used to identify the DNS server
+          within subjectAltName entry MUST be used to identify the DNS server
           certificate. For example, DNS server certificate will include SRV-ID
           "_domain-s.example.net" along with DNS-ID "example.net". The SRV
           service label "domain-s" is defined in Section 6 of <xref
@@ -341,12 +342,13 @@
               will be treated as a End-Entity certificate. The IoT device
               needs to identify the certificate provisioned to the DNS server.
               The SRV-ID identifier type <xref target="RFC6125"></xref> within
-              subjectAltName entry can be used to identify the DNS server
+              subjectAltName entry MUST be used to identify the DNS server
               certificate. For example, DNS server certificate will include
               SRV-ID "_domain-s.example.net" along with DNS-ID "example.net".
-              This specification defines SRV service label "domain-s" in <xref
-              target="IANA"></xref>. As a reminder, the protocol component is
-              not included in the SRV-ID <xref target="RFC4985"></xref>.</t>
+              The SRV service label "domain-s" is defined in Section 6 of
+              <xref target="RFC7858"></xref>. As a reminder, the protocol
+              component is not included in the SRV-ID <xref
+              target="RFC4985"></xref>.</t>
             </list></t>
         </list></t>
     </section>
@@ -635,9 +637,10 @@
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
-      <t>IANA is requested to allocate the SRV service name of "est". IANA is
-      requested to add the following entry in the "SMI Security for PKIX
-      Certificate Extension" (1.3.6.1.5.5.7.1) registry:</t>
+      <t>IANA is requested to allocate the SRV service name of "est". </t>
+
+      <t>IANA is requested to add the following entry in the "SMI Security for
+      PKIX Certificate Extension" (1.3.6.1.5.5.7.1) registry:</t>
 
       <t><figure>
           <preamble></preamble>
