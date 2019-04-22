@@ -276,11 +276,12 @@
           authenticate subsequent TLS connections to the EST server. The
           endpoint generates the reference identifier for the EST server using
           the DNS-ID identifier type in the EST server certificate. On
-          subsequent connections to the EST server, the endpoint can validate
+          subsequent connections to the EST server, the endpoint MUST validate
           the EST server certificate using the Implict Trust Anchor database
-          and matches the reference identifier against the EST server's
-          identity according to the rules specified in Section 6.4 of <xref
-          target="RFC6125"></xref>.</t>
+          (i.e, the EST server certificate must pass PKIX certification path
+          validation) and matches the reference identifier against the EST
+          server's identity according to the rules specified in Section 6.4 of
+          <xref target="RFC6125"></xref>.</t>
 
           <t>The endpoint learns the End-Entity certificates <xref
           target="RFC8295"></xref> from the EST server. The certificate
@@ -352,26 +353,33 @@
 
     <section anchor="discovery"
              title="DNS-over-(D)TLS and DNS-over-HTTPS Server Discovery Procedure">
-      <t>A DNS client discovers the DNS server in the local network supporting
-      DNS-over-TLS, DNS-over-DTLS and DNS-over-HTTPS protocols by using the
-      following discovery mechanism:</t>
+      <t>This specification defines "DPRIVE" as the application service tag
+      (<xref target="serviceT"></xref>) and "dns.tls" (<xref
+      target="dnstls"></xref>), "dns.dtls" (<xref target="dnsdtls"></xref>),
+      and "dns.https" (<xref target="dnshttps"></xref>) as application
+      protocol tags. A DNS client discovers the DNS server in the local
+      network supporting DNS-over-TLS, DNS-over-DTLS and DNS-over-HTTPS
+      protocols by using the following discovery mechanism:</t>
 
       <t><list style="symbols">
           <t>The DNS client retrieves the authentication domain name for the
           DNS server from the DNS-ID identifier type within subjectAltName
           entry in the DNS server certificate.</t>
 
-          <t>The DNS client then uses the authentication domain name for
-          S-NAPTR <xref target="RFC3958"></xref> lookup to learn the protocols
+          <t>The DNS client then makes an S-NAPTR <xref
+          target="RFC3958"></xref> lookup with the authentication domain name
+          and the 'DPRIVE' application service tag to learn the protocols
           DNS-over-TLS, DNS-over-DTLS, and DNS-over-HTTPS supported by the DNS
           server and the DNS privacy protocol preferred by the DNS server
-          administrators, as specified in <xref target="srvr"></xref> and
-          <xref target="tag"> </xref>. This specification adds a SRV service
-          label "domain-s" for privacy-enabling DNS servers. In the example
-          below, for authentication domain name 'example.net', the resolution
-          algorithm will result in the privacy-enabling protocols supported by
-          the DNS server and usable DNS server IP addresses and port
-          numbers.<figure anchor="fig-naptr-lookup">
+          administrators. The S-NAPTR lookup is performed using an recursive
+          DNS resolver discovered from an untrusted source (such as DHCP).
+          </t>
+
+          <t>In the example below, for authentication domain name
+          'example.net', the resolution algorithm will result in the
+          privacy-enabling protocols supported by the DNS server and usable
+          DNS server IP addresses and port numbers.<figure
+              anchor="fig-naptr-lookup">
               <artwork><![CDATA[   example.net.
    IN NAPTR 100 10 "" DPRIVE:dns.tls  "" dns1.example.net.
    IN NAPTR 200 10 "" DPRIVE:dns.dtls "" dns2.example.net.
@@ -401,39 +409,25 @@
           one of the mechanisms discussed in <xref
           target="I-D.ietf-doh-resolver-associated-doh"> </xref> to use the
           https URI scheme (Section 3 of <xref target="RFC8484"></xref>).</t>
+
+          <t>If no DNS-specific S-NAPTR records can be retrieved, the
+          discovery procedure fails for this authentication domain name.
+          However, before retrying a lookup that has failed, a DNS client MUST
+          wait a time period that is appropriate for the encountered error
+          (e.g., NXDOMAIN, timeout, etc.). </t>
         </list></t>
-
-      <section anchor="srvr" title="Resolution">
-        <t>Once the DNS client has retrieved the authentication domain name
-        for the DNS server, an S-NAPTR lookup with 'DPRIVE' application
-        service and the desired protocol tag is made to obtain information
-        necessary to securely connect to the DNS server. The S-NAPTR lookup is
-        performed using an recursive DNS resolver discovered from an untrusted
-        source (such as DHCP).</t>
-
-        <t>This specification defines "DPRIVE" as an application service tag
-        (<xref target="serviceT"></xref>) and "dns.tls" (<xref
-        target="dnstls"></xref>), "dns.dtls" (<xref target="dnsdtls"></xref>),
-        and "dns.https" (<xref target="dnshttps"></xref>) as application
-        protocol tags.</t>
-
-        <t>If no DNS-specific S-NAPTR records can be retrieved, the discovery
-        procedure fails for this authentication domain name. However, before
-        retrying a lookup that has failed, a DNS client MUST wait a time
-        period that is appropriate for the encountered error (e.g., NXDOMAIN,
-        timeout, etc.).</t>
-      </section>
     </section>
 
     <section anchor="auth" title="Connection handshake and service invocation">
       <t>The DNS client initiates (D)TLS handshake with the DNS server, the
       server presents its certificate in ServerHello message, and the DNS
-      client matches the DNS server certificate downloaded in step 4 in <xref
-      target="bootstrap-endpoint"></xref> and <xref
+      client MUST match the DNS server certificate downloaded in step 4 in
+      <xref target="bootstrap-endpoint"></xref> and <xref
       target="bootstrap-iot"></xref> with the certificate provided by the DNS
       server in (D)TLS handshake. If the match is successful, the DNS client
-      validates the server certificate using the Implicit Trust Anchor
-      database.</t>
+      MUST validate the server certificate using the Implicit Trust Anchor
+      database (i.e., the DNS server certificate must pass PKIX certification
+      path validation).</t>
 
       <t>If the match is successful and server certificate is successfully
       validated, the client continues with the connection as normal.
@@ -474,6 +468,21 @@
         in EST server configuration. EST client application receive these
         gratuitous packets and cache information contained in it.</t>
       </section>
+    </section>
+
+    <section anchor="reattach" title="Network reattachment">
+      <t>On subsequent attachments to the network, the endpoint discovers and
+      initiates TLS handshake with the EST server, and uses the validation
+      techniques described in <xref target="RFC6125"></xref> to compare the
+      reference identifier (created in Step 2 of <xref
+      target="bootstrap-endpoint"></xref>) to the EST server certificate and
+      verifies the entire certification path per <xref
+      target="RFC5280"></xref>. The endpoint then performs step 4 of <xref
+      target="bootstrap-endpoint"></xref> to get the DNS server certificate
+      from the EST server, discovers the privacy-enabling DNS server,
+      initiates (D)TLS handshake with the DNS server and follows the mechanism
+      discussed in <xref target="auth"></xref> to validate the DNS server
+      certificate.</t>
     </section>
 
     <section anchor="privacy" title="Privacy Considerations">
@@ -668,7 +677,7 @@
           <t><list style="symbols">
               <t>Application Protocol Tag: DPRIVE</t>
 
-              <t>Intended Usage: See <xref target="srvr"></xref></t>
+              <t>Intended Usage: See <xref target="discovery"></xref></t>
 
               <t>Security Considerations: See <xref
               target="Security"></xref></t>
@@ -682,7 +691,7 @@
           <t><list style="symbols">
               <t>Application Protocol Tag: dns.tls</t>
 
-              <t>Intended Usage: See <xref target="srvr"></xref></t>
+              <t>Intended Usage: See <xref target="discovery"></xref></t>
 
               <t>Security Considerations: See <xref
               target="Security"></xref></t>
@@ -696,7 +705,7 @@
           <t><list style="symbols">
               <t>Application Protocol Tag: dns.dtls</t>
 
-              <t>Intended Usage: See <xref target="srvr"></xref></t>
+              <t>Intended Usage: See <xref target="discovery"></xref></t>
 
               <t>Security Considerations: See <xref
               target="Security"></xref></t>
@@ -710,7 +719,7 @@
           <t><list style="symbols">
               <t>Application Protocol Tag: dnshttps</t>
 
-              <t>Intended Usage: See <xref target="srvr"></xref></t>
+              <t>Intended Usage: See <xref target="discovery"></xref></t>
 
               <t>Security Considerations: See <xref
               target="Security"></xref></t>
@@ -763,6 +772,8 @@
       <?rfc include="reference.RFC.8121"?>
 
       <?rfc include="reference.RFC.6762"?>
+
+      <?rfc include="reference.RFC.5280"?>
 
       <?rfc include='reference.I-D.ietf-anima-bootstrapping-keyinfra'?>
 
