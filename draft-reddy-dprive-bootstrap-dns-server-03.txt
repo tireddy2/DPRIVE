@@ -70,27 +70,27 @@ Table of Contents
    2.  Scope . . . . . . . . . . . . . . . . . . . . . . . . . . . .   5
    3.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   5
    4.  Bootstrapping Endpoint Devices  . . . . . . . . . . . . . . .   5
-   5.  Bootstrapping IoT Devices . . . . . . . . . . . . . . . . . .   7
-   6.  DNS-over-(D)TLS and DNS-over-HTTPS Server Discovery Procedure   8
+   5.  Bootstrapping IoT Devices . . . . . . . . . . . . . . . . . .   6
+   6.  DNS-over-(D)TLS and DNS-over-HTTPS Server Discovery Procedure   7
    7.  Connection handshake and service invocation . . . . . . . . .   9
-   8.  EST service Discovery Procedure . . . . . . . . . . . . . . .  10
-     8.1.  mDNS  . . . . . . . . . . . . . . . . . . . . . . . . . .  10
-   9.  Network reattachment  . . . . . . . . . . . . . . . . . . . .  11
-   10. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  11
-     10.1.  Privacy Extension Format . . . . . . . . . . . . . . . .  12
-     10.2.  Privacy Extension Syntax . . . . . . . . . . . . . . . .  13
-   11. Security Considerations . . . . . . . . . . . . . . . . . . .  13
-   12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  14
-     12.1.  Application Service & Application Protocol Tags  . . . .  15
-       12.1.1.  DNS Application Service Tag Registration . . . . . .  15
-       12.1.2.  dns.tls Application Protocol Tag Registration  . . .  15
-       12.1.3.  dns.dtls Application Protocol Tag Registration . . .  15
-       12.1.4.  dns.https Application Protocol Tag Registration  . .  15
-   13. Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .  16
-   14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  16
-     14.1.  Normative References . . . . . . . . . . . . . . . . . .  16
-     14.2.  Informative References . . . . . . . . . . . . . . . . .  18
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  19
+   8.  EST service Discovery Procedure . . . . . . . . . . . . . . .   9
+     8.1.  mDNS  . . . . . . . . . . . . . . . . . . . . . . . . . .   9
+   9.  Network reattachment  . . . . . . . . . . . . . . . . . . . .  10
+   10. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  10
+     10.1.  Privacy Extension Format . . . . . . . . . . . . . . . .  10
+     10.2.  Privacy Extension Syntax . . . . . . . . . . . . . . . .  11
+   11. Security Considerations . . . . . . . . . . . . . . . . . . .  12
+   12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  13
+     12.1.  Application Service & Application Protocol Tags  . . . .  13
+       12.1.1.  DNS Application Service Tag Registration . . . . . .  14
+       12.1.2.  dns.tls Application Protocol Tag Registration  . . .  14
+       12.1.3.  dns.dtls Application Protocol Tag Registration . . .  14
+       12.1.4.  dns.https Application Protocol Tag Registration  . .  14
+   13. Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .  14
+   14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  15
+     14.1.  Normative References . . . . . . . . . . . . . . . . . .  15
+     14.2.  Informative References . . . . . . . . . . . . . . . . .  17
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  18
 
 1.  Introduction
 
@@ -315,57 +315,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
        Section 6 of [RFC7858].  As a reminder, the protocol component is
        not included in the SRV-ID [RFC4985].
 
-   Figure 1 provides a ladder diagram for bootstrapping an endpoint with
-   the local network's DNS server certificate.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Reddy, et al.            Expires October 4, 2019                [Page 6]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
-
- +----------+                                                   +------------+  +------------+
- | Endpoint |                                                   | EST Server |  | DNS Server |
- +------|---+                                                   +---------|--+  +--------|---+
-        |      DNS-SD query to discover the EST server                    |              |
-        |<------------------------------------------------------------------------------>|
-        |                                                                 |              |
-        |      optional: mDNS query to discover the EST server            |              |
-        |<--------------------------------------------------------------->|              |
-        |                                                                 |              |
-        |      Establish provisional TLS connection                       |              |
-        |<--------------------------------------------------------------->|              |
-        |                                                                 |              |
-        |      PAKE scheme to authenticate the EST server                 |              |
-        |<--------------------------------------------------------------->|              |
-        |                                                                 |              |
-[Generate reference identifier for the EST server                         |              |
- to compare with the EST server certificate in subsequent TLS connections]|              |
-        |                                                                 |              |
-        |      Get EE certificates                                        |              |
-        |<--------------------------------------------------------------->|              |
-        |                                                                 |              |
-[Identify the DNS server certificate in EE certificates to                |              |
- match with the certificate by the DNS server in (D)TLS handshake]        |              |
-        |                                                                 |              |
-        |                                                                 |              |
-
-           Figure 1: Sequence of Bootstrapping Endpoint Devices
-
 5.  Bootstrapping IoT Devices
 
    The following steps explain the mechanism to automatically bootstrap
@@ -381,19 +330,19 @@ Internet-Draft          DoT/DoH server discovery              April 2019
       the EST server.  The IoT device can use BRSKI to automatically
       bootstrap the IoT device using the IoT manufacturer provisioned
       X.509 certificate, in combination with a registrar provided by the
+
+
+
+Reddy, et al.            Expires October 4, 2019                [Page 6]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
+
       local network and IoT device manufacturer's authorizing service
       (MASA).
 
       1.  The IoT device authenticates to the local network using the
           IoT manufacturer provisioned X.509 certificate.  The IoT
-
-
-
-Reddy, et al.            Expires October 4, 2019                [Page 7]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
-
           device can request and get a voucher from the MASA service via
           the registrar.  The voucher is signed by the MASA service and
           includes the local network's CA public key.
@@ -438,18 +387,17 @@ Internet-Draft          DoT/DoH server discovery              April 2019
       DNS server from the DNS-ID identifier type within subjectAltName
       entry in the DNS server certificate.
 
-   o  The DNS client then makes an S-NAPTR [RFC3958] lookup with the
-      authentication domain name and the 'DPRIVE' application service
-      tag to learn the protocols DNS-over-TLS, DNS-over-DTLS, and DNS-
-      over-HTTPS supported by the DNS server and the DNS privacy
 
 
-
-Reddy, et al.            Expires October 4, 2019                [Page 8]
+Reddy, et al.            Expires October 4, 2019                [Page 7]
 
 Internet-Draft          DoT/DoH server discovery              April 2019
 
 
+   o  The DNS client then makes an S-NAPTR [RFC3958] lookup with the
+      authentication domain name and the 'DPRIVE' application service
+      tag to learn the protocols DNS-over-TLS, DNS-over-DTLS, and DNS-
+      over-HTTPS supported by the DNS server and the DNS privacy
       protocol preferred by the DNS server administrators.  The S-NAPTR
       lookup is performed using an recursive DNS resolver discovered
       from an untrusted source (such as DHCP).
@@ -479,7 +427,7 @@ Internet-Draft          DoT/DoH server discovery              April 2019
       IN A        192.0.2.1
       IN AAAA     2001:db8:8:4::2
 
-                                 Figure 2
+                                 Figure 1
 
    o  If DNS-over-HTTPS protocol is supported by the DNS server, the DNS
       client finds the URI template of the DNS-over-HTTPS server using
@@ -493,19 +441,20 @@ Internet-Draft          DoT/DoH server discovery              April 2019
       time period that is appropriate for the encountered error (e.g.,
       NXDOMAIN, timeout, etc.).
 
+
+
+
+
+Reddy, et al.            Expires October 4, 2019                [Page 8]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
+
 7.  Connection handshake and service invocation
 
    The DNS client initiates (D)TLS handshake with the DNS server, the
    server presents its certificate in ServerHello message, and the DNS
    client MUST match the DNS server certificate downloaded in step 4 in
-
-
-
-Reddy, et al.            Expires October 4, 2019                [Page 9]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
-
    Section 4 and Section 5 with the certificate provided by the DNS
    server in (D)TLS handshake.  If the match is successful, the DNS
    client MUST validate the server certificate using the Implicit Trust
@@ -548,60 +497,30 @@ Internet-Draft          DoT/DoH server discovery              April 2019
 
    A EST server can send out gratuitous multicast DNS answer packets
    whenever it starts up, wakes from sleep, or detects a change in EST
-   server configuration.  EST client application receive these
-   gratuitous packets and cache information contained in it.
 
 
 
 
-
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 10]
+Reddy, et al.            Expires October 4, 2019                [Page 9]
 
 Internet-Draft          DoT/DoH server discovery              April 2019
 
+
+   server configuration.  EST client application receive these
+   gratuitous packets and cache information contained in it.
 
 9.  Network reattachment
 
    On subsequent attachments to the network, the endpoint discovers and
    initiates TLS handshake with the EST server, and uses the validation
    techniques described in [RFC6125] to compare the reference identifier
-   (created in Step 2 of Section 4 in this specification) to the EST
-   server certificate and verifies the entire certification path per
-   [RFC5280].  The endpoint then performs Step 4 of Section 4 to get the
-   DNS server certificate from the EST server, discovers the privacy-
-   enabling DNS server, initiates (D)TLS handshake with the DNS server
-   and follows the mechanism discussed in Section 7 to validate the DNS
-   server certificate.
-
-   Figure 3 provides a ladder diagram for bootstrapping an endpoint with
-   the local network's DNS server certificate on subsequent attachments
-   to the network.
-
- +----------+                                                   +------------+  +------------+
- | Endpoint |                                                   | EST Server |  | DNS Server |
- +------|---+                                                   +-------|----+  +------|-----+
-        |                                                               |              |
-        | DNS-SD query to discover the EST server                       |              |
-        |<---------------------------------------------------------------------------->|
-        |                                                               |              |
-        | optional: mDNS query to discover the EST server               |              |
-        |<------------------------------------------------------------->|              |
-        |                                                               |              |
-        | Establish TLS connection and validate EST server certificate  |              |
-        |<------------------------------------------------------------->|              |
-        |                                                               |              |
-        |      Get EE certificates                                      |              |
-        |<------------------------------------------------------------->|              |
-        |                                                               |              |
- [Identify the DNS server certificate in EE certificates to             |              |
-  match with the certificate by the DNS server in (D)TLS handshake]     |              |
-        |                                                               |              |
-        |                                                               |              |
-
-    Figure 3: Sequence of Bootstrapping Endpoint Devices on subsequent
-                        attachments to the network.
+   (created in Step 2 of Section 4) to the EST server certificate and
+   verifies the entire certification path per [RFC5280].  The endpoint
+   then performs step 4 of Section 4 to get the DNS server certificate
+   from the EST server, discovers the privacy-enabling DNS server,
+   initiates (D)TLS handshake with the DNS server and follows the
+   mechanism discussed in Section 7 to validate the DNS server
+   certificate.
 
 10.  Privacy Considerations
 
@@ -610,14 +529,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    [RFC7626] contexts.  The endpoint may not know if the DNS-over-(D)TLS
    or DNS-over-HTTPS server in the local network has a privacy
    preserving data policy.  A new privacy certificate extension is
-
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 11]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
-
    defined that identifies the privacy preserving data policy of the DNS
    server.
 
@@ -644,6 +555,13 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    A non-null privacy always includes a base privacy.  The privacy
    extension includes the following information:
 
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 10]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
+
    o  If the client IP address is Personally Identifiable Information
       (PII) data or non PII-data.
 
@@ -665,15 +583,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    o  If the DNS server will block DNS resolution of certain domains
       (e.g. malicious domains).
 
-
-
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 12]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
-
    o  A URL that points to the privacy preserving data policy, and a URL
       that points to the security assessment report of the DNS server by
       a third party auditor.
@@ -681,6 +590,33 @@ Internet-Draft          DoT/DoH server discovery              April 2019
 10.2.  Privacy Extension Syntax
 
    The syntax for the privacy extension is:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 11]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
 
    Privacy ::=  CHOICE  {
      none                 NULL,             -- No privacy policy provided
@@ -723,13 +659,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    considerations in [I-D.barnes-tls-pake] and [RFC8120] need to be
    taken into consideration.
 
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 13]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
-
    Users cannot be expected to enable or disable the bootstrapping or
    the discovery procedure as they switch networks.  Thus, it is
    RECOMMENDED that users indicate to their system in some way that they
@@ -737,6 +666,13 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    network, similar to the way users disable VPN connection in specific
    network (e.g.  Enterprise network) and enable VPN connection by
    default in other networks.
+
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 12]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
 
    If the endpoint has enabled strict privacy profile, and the network
    security service blocks the traffic to the privacy-enabling public
@@ -776,16 +712,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    IANA is requested to add the following entry in the "SMI Security for
    PKIX Module Identifier" (1.3.6.1.5.5.7.0) registry:
 
-
-
-
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 14]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
-
       Decimal  Description                     References
       -------  ------------------------------  ---------------------
 
@@ -796,6 +722,13 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    This document requests IANA to make the following allocations from
    the registry available at: https://www.iana.org/assignments/s-naptr-
    parameters/s-naptr-parameters.xhtml.
+
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 13]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
 
 12.1.1.  DNS Application Service Tag Registration
 
@@ -835,13 +768,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
 
    o  Security Considerations: See Section 11
 
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 15]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
-
    o  Contact Information: <one of the authors>
 
 13.  Acknowledgments
@@ -849,6 +775,16 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    Thanks to Joe Hildebrand, Harsha Joshi, Shashank Jain, Patrick
    McManus, Eliot Lear and Sara Dickinson for the discussion and
    comments.
+
+
+
+
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 14]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
 
 14.  References
 
@@ -890,20 +826,21 @@ Internet-Draft          DoT/DoH server discovery              April 2019
               (CRL) Profile", RFC 5280, DOI 10.17487/RFC5280, May 2008,
               <https://www.rfc-editor.org/info/rfc5280>.
 
-
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 16]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
-
    [RFC6125]  Saint-Andre, P. and J. Hodges, "Representation and
               Verification of Domain-Based Application Service Identity
               within Internet Public Key Infrastructure Using X.509
               (PKIX) Certificates in the Context of Transport Layer
               Security (TLS)", RFC 6125, DOI 10.17487/RFC6125, March
               2011, <https://www.rfc-editor.org/info/rfc6125>.
+
+
+
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 15]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
 
    [RFC6347]  Rescorla, E. and N. Modadugu, "Datagram Transport Layer
               Security Version 1.2", RFC 6347, DOI 10.17487/RFC6347,
@@ -947,16 +884,19 @@ Internet-Draft          DoT/DoH server discovery              April 2019
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/info/rfc8174>.
 
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 17]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
-
    [RFC8295]  Turner, S., "EST (Enrollment over Secure Transport)
               Extensions", RFC 8295, DOI 10.17487/RFC8295, January 2018,
               <https://www.rfc-editor.org/info/rfc8295>.
+
+
+
+
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 16]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
 
    [RFC8446]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
               Version 1.3", RFC 8446, DOI 10.17487/RFC8446, August 2018,
@@ -1000,19 +940,19 @@ Internet-Draft          DoT/DoH server discovery              April 2019
               RFC 6106, DOI 10.17487/RFC6106, November 2010,
               <https://www.rfc-editor.org/info/rfc6106>.
 
-
-
-
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 18]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
-
    [RFC7626]  Bortzmeyer, S., "DNS Privacy Considerations", RFC 7626,
               DOI 10.17487/RFC7626, August 2015,
               <https://www.rfc-editor.org/info/rfc7626>.
+
+
+
+
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 17]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
 
    [RFC7871]  Contavalli, C., van der Gaast, W., Lawrence, D., and W.
               Kumari, "Client Subnet in DNS Queries", RFC 7871,
@@ -1061,4 +1001,8 @@ Authors' Addresses
 
 
 
-Reddy, et al.            Expires October 4, 2019               [Page 19]
+
+
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 18]
