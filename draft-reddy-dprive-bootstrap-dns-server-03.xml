@@ -38,7 +38,7 @@
     </author>
 
     <author fullname="Dan Wing" initials="D." surname="Wing">
-      <organization>Citrix </organization>
+      <organization>Citrix</organization>
 
       <address>
         <postal>
@@ -298,7 +298,40 @@
           service label "domain-s" is defined in Section 6 of <xref
           target="RFC7858"></xref>. As a reminder, the protocol component is
           not included in the SRV-ID <xref target="RFC4985"></xref>.</t>
-        </list></t>
+        </list><xref target="fig1"></xref> provides a ladder diagram for
+      bootstrapping an endpoint with the local network's DNS server
+      certificate. </t>
+
+      <t><figure anchor="fig1"
+          title="Sequence of Bootstrapping Endpoint Devices">
+          <artwork align="left"><![CDATA[                                                                                                                                                                                                     
+ +----------+                                                   +------------+  +------------+                               
+ | Endpoint |                                                   | EST Server |  | DNS Server |                               
+ +------|---+                                                   +---------|--+  +--------|---+                               
+        |      DNS-SD query to discover the EST server                    |              |                                         
+        |<------------------------------------------------------------------------------>|                                         
+        |                                                                 |              |
+        |      optional: mDNS query to discover the EST server            |              |
+        |<--------------------------------------------------------------->|              | 
+        |                                                                 |              |                                         
+        |      Establish provisional TLS connection                       |              |                                         
+        |<--------------------------------------------------------------->|              |                                         
+        |                                                                 |              |                                         
+        |      PAKE scheme to authenticate the EST server                 |              | 
+        |<--------------------------------------------------------------->|              |                                         
+        |                                                                 |              |                                         
+[Generate reference identifier for the EST server                         |              |                                         
+ to compare with the EST server certificate in subsequent TLS connections]|              |                                         
+        |                                                                 |              |                                         
+        |      Get EE certificates                                        |              |                                         
+        |<--------------------------------------------------------------->|              |                                         
+        |                                                                 |              |                                         
+[Identify the DNS server certificate in EE certificates to                |              |                                         
+ match with the certificate by the DNS server in (D)TLS handshake]        |              |                                          
+        |                                                                 |              |                                         
+        |                                                                 |              |                                         
+]]></artwork>
+        </figure></t>
     </section>
 
     <section anchor="bootstrap-iot" title="Bootstrapping IoT Devices">
@@ -374,8 +407,7 @@
           DNS-over-TLS, DNS-over-DTLS, and DNS-over-HTTPS supported by the DNS
           server and the DNS privacy protocol preferred by the DNS server
           administrators. The S-NAPTR lookup is performed using an recursive
-          DNS resolver discovered from an untrusted source (such as DHCP).
-          </t>
+          DNS resolver discovered from an untrusted source (such as DHCP).</t>
 
           <t>In the example below, for authentication domain name
           'example.net', the resolution algorithm will result in the
@@ -416,7 +448,7 @@
           discovery procedure fails for this authentication domain name.
           However, before retrying a lookup that has failed, a DNS client MUST
           wait a time period that is appropriate for the encountered error
-          (e.g., NXDOMAIN, timeout, etc.). </t>
+          (e.g., NXDOMAIN, timeout, etc.).</t>
         </list></t>
     </section>
 
@@ -477,14 +509,44 @@
       initiates TLS handshake with the EST server, and uses the validation
       techniques described in <xref target="RFC6125"></xref> to compare the
       reference identifier (created in Step 2 of <xref
-      target="bootstrap-endpoint"></xref>) to the EST server certificate and
-      verifies the entire certification path per <xref
-      target="RFC5280"></xref>. The endpoint then performs step 4 of <xref
+      target="bootstrap-endpoint"></xref> in this specification) to the EST
+      server certificate and verifies the entire certification path per <xref
+      target="RFC5280"></xref>. The endpoint then performs Step 4 of <xref
       target="bootstrap-endpoint"></xref> to get the DNS server certificate
       from the EST server, discovers the privacy-enabling DNS server,
       initiates (D)TLS handshake with the DNS server and follows the mechanism
       discussed in <xref target="auth"></xref> to validate the DNS server
-      certificate.</t>
+      certificate. </t>
+
+      <t><xref target="fig2 "></xref> provides a ladder diagram for
+      bootstrapping an endpoint with the local network's DNS server
+      certificate on subsequent attachments to the network.</t>
+
+      <t><figure anchor="fig2"
+          title="Sequence of Bootstrapping Endpoint Devices on subsequent attachments to the network.">
+          <artwork align="left"><![CDATA[                                                                                                                                                                                                     
+ +----------+                                                   +------------+  +------------+                               
+ | Endpoint |                                                   | EST Server |  | DNS Server |                               
+ +------|---+                                                   +-------|----+  +------|-----+                               
+        |                                                               |              |  
+        | DNS-SD query to discover the EST server                       |              |                                         
+        |<---------------------------------------------------------------------------->|                                         
+        |                                                               |              |
+        | optional: mDNS query to discover the EST server               |              |
+        |<------------------------------------------------------------->|              | 
+        |                                                               |              |                                         
+        | Establish TLS connection and validate EST server certificate  |              |                                         
+        |<------------------------------------------------------------->|              |                                         
+        |                                                               |              |                                         
+        |      Get EE certificates                                      |              |                                         
+        |<------------------------------------------------------------->|              |                                         
+        |                                                               |              |                                         
+ [Identify the DNS server certificate in EE certificates to             |              |                                         
+  match with the certificate by the DNS server in (D)TLS handshake]     |              |                                          
+        |                                                               |              |                                         
+        |                                                               |              |                                         
+]]></artwork>
+        </figure></t>
     </section>
 
     <section anchor="privacy" title="Privacy Considerations">
@@ -637,7 +699,7 @@
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
-      <t>IANA is requested to allocate the SRV service name of "est". </t>
+      <t>IANA is requested to allocate the SRV service name of "est".</t>
 
       <t>IANA is requested to add the following entry in the "SMI Security for
       PKIX Certificate Extension" (1.3.6.1.5.5.7.1) registry:</t>
