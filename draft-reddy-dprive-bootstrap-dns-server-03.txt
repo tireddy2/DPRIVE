@@ -315,9 +315,9 @@ Internet-Draft          DoT/DoH server discovery              April 2019
        Section 6 of [RFC7858].  As a reminder, the protocol component is
        not included in the SRV-ID [RFC4985].
 
-   Figure 1 provides a ladder diagram for bootstrapping an endpoint with
-   the local network's DNS server certificate.
-
+   The following Figure 1 illustrates a sequence diagram for
+   bootstrapping an endpoint with the local network's DNS server
+   certificate.
 
 
 
@@ -364,7 +364,7 @@ Internet-Draft          DoT/DoH server discovery              April 2019
         |                                                                 |              |
         |                                                                 |              |
 
-           Figure 1: Sequence of Bootstrapping Endpoint Devices
+                 Figure 1: Bootstrapping Endpoint Devices
 
 5.  Bootstrapping IoT Devices
 
@@ -575,9 +575,9 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    and follows the mechanism discussed in Section 7 to validate the DNS
    server certificate.
 
-   Figure 3 provides a ladder diagram for bootstrapping an endpoint with
-   the local network's DNS server certificate on subsequent attachments
-   to the network.
+   The following Figure 3 illustrates a sequence diagram for
+   bootstrapping an endpoint with the local network's DNS server
+   certificate on subsequent attachments to the network.
 
  +----------+                                                   +------------+  +------------+
  | Endpoint |                                                   | EST Server |  | DNS Server |
@@ -592,7 +592,7 @@ Internet-Draft          DoT/DoH server discovery              April 2019
         | Establish TLS connection and validate EST server certificate  |              |
         |<------------------------------------------------------------->|              |
         |                                                               |              |
-        |      Get EE certificates                                      |              |
+        | Get EE certificates                                           |              |
         |<------------------------------------------------------------->|              |
         |                                                               |              |
  [Identify the DNS server certificate in EE certificates to             |              |
@@ -600,8 +600,8 @@ Internet-Draft          DoT/DoH server discovery              April 2019
         |                                                               |              |
         |                                                               |              |
 
-    Figure 3: Sequence of Bootstrapping Endpoint Devices on subsequent
-                        attachments to the network.
+   Figure 3: Bootstrapping Endpoint Devices on subsequent attachments to
+                               the network.
 
 10.  Privacy Considerations
 

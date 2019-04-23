@@ -298,12 +298,11 @@
           service label "domain-s" is defined in Section 6 of <xref
           target="RFC7858"></xref>. As a reminder, the protocol component is
           not included in the SRV-ID <xref target="RFC4985"></xref>.</t>
-        </list><xref target="fig1"></xref> provides a ladder diagram for
-      bootstrapping an endpoint with the local network's DNS server
-      certificate. </t>
+        </list>The following <xref target="fig1"></xref> illustrates a
+      sequence diagram for bootstrapping an endpoint with the local network's
+      DNS server certificate. </t>
 
-      <t><figure anchor="fig1"
-          title="Sequence of Bootstrapping Endpoint Devices">
+      <t><figure anchor="fig1" title="Bootstrapping Endpoint Devices">
           <artwork align="left"><![CDATA[                                                                                                                                                                                                     
  +----------+                                                   +------------+  +------------+                               
  | Endpoint |                                                   | EST Server |  | DNS Server |                               
@@ -518,12 +517,12 @@
       discussed in <xref target="auth"></xref> to validate the DNS server
       certificate. </t>
 
-      <t><xref target="fig2 "></xref> provides a ladder diagram for
-      bootstrapping an endpoint with the local network's DNS server
-      certificate on subsequent attachments to the network.</t>
+      <t>The following <xref target="fig2 "></xref> illustrates a sequence
+      diagram for bootstrapping an endpoint with the local network's DNS
+      server certificate on subsequent attachments to the network.</t>
 
       <t><figure anchor="fig2"
-          title="Sequence of Bootstrapping Endpoint Devices on subsequent attachments to the network.">
+          title="Bootstrapping Endpoint Devices on subsequent attachments to the network.">
           <artwork align="left"><![CDATA[                                                                                                                                                                                                     
  +----------+                                                   +------------+  +------------+                               
  | Endpoint |                                                   | EST Server |  | DNS Server |                               
@@ -538,7 +537,7 @@
         | Establish TLS connection and validate EST server certificate  |              |                                         
         |<------------------------------------------------------------->|              |                                         
         |                                                               |              |                                         
-        |      Get EE certificates                                      |              |                                         
+        | Get EE certificates                                           |              |                                         
         |<------------------------------------------------------------->|              |                                         
         |                                                               |              |                                         
  [Identify the DNS server certificate in EE certificates to             |              |                                         
