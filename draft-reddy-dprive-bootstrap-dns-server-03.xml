@@ -319,31 +319,35 @@
 
       <t><figure anchor="fig1" title="Bootstrapping Endpoint Devices">
           <artwork align="left"><![CDATA[                                                                                                                                                                                                     
- +----------+                                                   +------------+  +------------+                               
- | Endpoint |                                                   | EST Server |  | DNS Server |                               
- +----------+                                                   +------------+  +------------+                               
-        |      DNS-SD query to discover the EST server                    |              |                                         
-        |<------------------------------------------------------------------------------>|                                         
-        |                                                                 |              |
-        |      optional: mDNS query to discover the EST server            |              |
-        |<--------------------------------------------------------------->|              | 
-        |                                                                 |              |                                         
-        |      Establish provisional TLS connection                       |              |                                         
-        |<--------------------------------------------------------------->|              |                                         
-        |                                                                 |              |                                         
-        |      PAKE scheme to authenticate the EST server                 |              | 
-        |<--------------------------------------------------------------->|              |                                         
-        |                                                                 |              |                                         
-[Generate reference identifier for the EST server                         |              |                                         
- to compare with the EST server certificate in subsequent TLS connections]|              |                                         
-        |                                                                 |              |                                         
-        |      Get EE certificates                                        |              |                                         
-        |<--------------------------------------------------------------->|              |                                         
-        |                                                                 |              |                                         
-[Identify the DNS server certificate in EE certificates to                |              |                                         
- match with the certificate by the DNS server in (D)TLS handshake]        |              |                                          
-        |                                                                 |              |                                         
-        |                                                                 |              |                                         
++----------+                                     +--------+  +--------+                               
+| Endpoint |                                     |  EST   |  |  DNS   |   
+|          |                                     | Server |  | Server |                     
++----------+                                     +--------+  +--------+                               
+        | DNS-SD query to discover the EST server      |          |                                         
+        |<------------------------------------------------------->|                                         
+        |                                              |          |
+        | optional: mDNS query to                      |          |
+        |  discover the EST server                     |          |
+        |<---------------------------------------------|          | 
+        |                                              |          |                                         
+        | Establish provisional TLS connection         |          |                                         
+        |<-------------------------------------------->|          |                                         
+        |                                              |          |                                         
+        | PAKE scheme to authenticate the EST server   |          | 
+        |<-------------------------------------------->|          |                                         
+        |                                              |          |                                         
+[Generate reference identifier for the EST server      |          |                                         
+ to compare with the EST server certificate            |          |
+ in subsequent TLS connections]                        |          |                           
+        |                                              |          |                                         
+        |      Get EE certificates                     |          |                                         
+        |<-------------------------------------------->|          |                                         
+        |                                              |          |                                         
+[Identify the DNS server certificate in EE             |          | 
+ certificates to match with the certificate            |          |  
+ by the DNS server in (D)TLS handshake]                |          |                                          
+        |                                              |          |                                         
+        |                                              |          |                                         
 ]]></artwork>
         </figure></t>
     </section>
@@ -531,27 +535,30 @@
 
       <t><figure anchor="fig2"
           title="Bootstrapping Endpoint Devices on subsequent attachments to the network.">
-          <artwork align="left"><![CDATA[                                                                                                                                                                                                     
- +----------+                                                   +------------+  +------------+                               
- | Endpoint |                                                   | EST Server |  | DNS Server |                               
- +----------+                                                   +------------+  +------------+                               
-        |                                                               |              |  
-        | DNS-SD query to discover the EST server                       |              |                                         
-        |<---------------------------------------------------------------------------->|                                         
-        |                                                               |              |
-        | optional: mDNS query to discover the EST server               |              |
-        |<------------------------------------------------------------->|              | 
-        |                                                               |              |                                         
-        | Establish TLS connection and validate EST server certificate  |              |                                         
-        |<------------------------------------------------------------->|              |                                         
-        |                                                               |              |                                         
-        | Get EE certificates                                           |              |                                         
-        |<------------------------------------------------------------->|              |                                         
-        |                                                               |              |                                         
- [Identify the DNS server certificate in EE certificates to             |              |                                         
-  match with the certificate by the DNS server in (D)TLS handshake]     |              |                                          
-        |                                                               |              |                                         
-        |                                                               |              |                                         
+          <artwork align="left"><![CDATA[+----------+                                     +--------+  +--------+                               
+| Endpoint |                                     |  EST   |  |  DNS   |   
+|          |                                     | Server |  | Server |                     
++----------+                                     +--------+  +--------+                               
+        | DNS-SD query to discover the EST server      |          |                                         
+        |<------------------------------------------------------->|                                         
+        |                                              |          |
+        | optional: mDNS query to                      |          |
+        | discover the EST server                      |          |
+        |<---------------------------------------------|          | 
+        |                                              |          |                                         
+        | Establish TLS connection                     |          | 
+        | and validate EST server certificate          |          |
+        |<-------------------------------------------->|          |                                         
+        |                                              |          |                                         
+        |      Get EE certificates                     |          |                                         
+        |<-------------------------------------------->|          |                                         
+        |                                              |          |                                         
+[Identify the DNS server certificate in EE             |          | 
+ certificates to match with the certificate            |          |  
+ by the DNS server in (D)TLS handshake]                |          |                                          
+        |                                              |          |                                         
+        |                                              |          |
+
 ]]></artwork>
         </figure></t>
     </section>
@@ -621,8 +628,11 @@
 
         <t><figure>
             <artwork><![CDATA[   Privacy ::=  CHOICE  {
-     none                 NULL,             -- No privacy policy provided
-     pPolicy              PrivacyPolicy  }  -- Privacy preserving data policy
+     none                 NULL,             
+                          -- No privacy policy provided
+     pPolicy              PrivacyPolicy 
+                          -- Privacy preserving data policy  }  
+                          
 
    PrivacyPolicy ::=  SEQUENCE  {
      base              PrivacyInfo,
@@ -630,25 +640,38 @@
      aURL         [1]  AuditURL OPTIONAL  }
 
   PrivacyInfo  ::=  SEQUENCE  {
-     ipaddresspii      BOOLEAN,  -- TRUE means client IP address is PII
+     ipaddresspii      BOOLEAN,  
+                       -- TRUE means client IP address is PII
      log          [0]  Logging, 
      retention    [1]  DataRetention,
      sdata        [2]  ShareData,
-     transferdata [3]  BOOLEAN,  -- TRUE means share or sell data to third parties
-     blockdomains [4]  BOOLEAN   -- TRUE means domains will be blocked  }
+     transferdata [3]  BOOLEAN,  
+                       -- TRUE means share or sell data to third parties
+     blockdomains [4]  BOOLEAN   
+                       -- TRUE means domains will be blocked  }
 
    Logging ::=  SEQUENCE  {
-     logip                BOOLEAN, -- TRUE means client IP address logging
-     temporary            BOOLEAN  OPTIONAL -- TRUE means temporary logs  }
+     logip                BOOLEAN, 
+                          -- TRUE means client IP address logging
+     temporary            BOOLEAN  OPTIONAL 
+                          -- TRUE means temporary logs  }
 
    DataRetention ::=  SEQUENCE  {
-     cleardata            BOOLEAN, -- TRUE means the server clears the stored transaction data 
-     period               INTEGER OPTIONAL -- Number of Hours the transaction data is stored  }
+     cleardata            BOOLEAN, 
+                          -- TRUE means the server clears 
+                          -- the stored transaction data 
+     period               INTEGER OPTIONAL 
+                          -- Number of Hours the 
+                          -- transaction data is stored  }
 
    ShareData ::=  SEQUENCE  {
-     sharepartners        BOOLEAN, -- TRUE means data is shared with partners
-     partners        [1]  SEQUENCE SIZE (1..MAX) OF UTF8String OPTIONAL -- Names of the partners
-     anonymizeddata  [0]  BOOLEAN OPTIONAL, -- TRUE means anonymized data is shared with partners  }
+     sharepartners        BOOLEAN, 
+                          -- TRUE means data is shared with partners
+     partners        [1]  SEQUENCE SIZE (1..MAX) OF UTF8String OPTIONAL, 
+                          -- Names of the partners
+     anonymizeddata  [0]  BOOLEAN OPTIONAL 
+                          -- TRUE means anonymized data 
+                          -- is shared with partners  }
  
    PrivacyURL  ::=  IA5String  -- MUST use https scheme
    AuditURL    ::=  IA5String  -- MUST use https scheme
