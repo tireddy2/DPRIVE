@@ -72,40 +72,40 @@ Table of Contents
    4.  Bootstrapping Endpoint Devices  . . . . . . . . . . . . . . .   5
    5.  Bootstrapping IoT Devices . . . . . . . . . . . . . . . . . .   7
    6.  DNS-over-(D)TLS and DNS-over-HTTPS Server Discovery Procedure   8
-   7.  Connection handshake and service invocation . . . . . . . . .   9
-   8.  EST service Discovery Procedure . . . . . . . . . . . . . . .  10
+   7.  Connection Handshake and Service Invocation . . . . . . . . .   9
+   8.  EST Service Discovery Procedure . . . . . . . . . . . . . . .  10
      8.1.  mDNS  . . . . . . . . . . . . . . . . . . . . . . . . . .  10
-   9.  Network reattachment  . . . . . . . . . . . . . . . . . . . .  11
+   9.  Network Reattachment  . . . . . . . . . . . . . . . . . . . .  10
    10. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  11
-     10.1.  Privacy Extension Format . . . . . . . . . . . . . . . .  12
-     10.2.  Privacy Extension Syntax . . . . . . . . . . . . . . . .  13
+     10.1.  Privacy Extension Format . . . . . . . . . . . . . . . .  11
+     10.2.  Privacy Extension Syntax . . . . . . . . . . . . . . . .  12
    11. Security Considerations . . . . . . . . . . . . . . . . . . .  13
    12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  14
-     12.1.  Application Service & Application Protocol Tags  . . . .  15
+     12.1.  Application Service & Application Protocol Tags  . . . .  14
        12.1.1.  DNS Application Service Tag Registration . . . . . .  15
        12.1.2.  dns.tls Application Protocol Tag Registration  . . .  15
        12.1.3.  dns.dtls Application Protocol Tag Registration . . .  15
        12.1.4.  dns.https Application Protocol Tag Registration  . .  15
-   13. Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .  16
+   13. Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .  15
    14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  16
      14.1.  Normative References . . . . . . . . . . . . . . . . . .  16
-     14.2.  Informative References . . . . . . . . . . . . . . . . .  18
+     14.2.  Informative References . . . . . . . . . . . . . . . . .  17
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  19
 
 1.  Introduction
 
-   Traditionally a caching DNS server has been provided by the local
-   network.  This provides benefits like low latency to that DNS server
-   (due to its network proximity to the endpoint).  However, if an
-   endpoint is configured to use Internet-hosted or public DNS-
-   over-(D)TLS [RFC7858] [RFC8094] or DNS-over-HTTPS [RFC8484] servers,
-   the local DNS server cannot serve the DNS requests from the
-   endpoints.  If public DNS servers are used instead of using local DNS
-   servers, the operational problems are listed below:
+   Traditionally a caching DNS server has been provided by local
+   networks.  This provides benefits such as low latency to reach that
+   DNS server (owing to its network proximity to the endpoint).
+   However, if an endpoint is configured to use Internet-hosted or
+   public DNS-over-(D)TLS [RFC7858] [RFC8094] or DNS-over-HTTPS
+   [RFC8484] servers, any available local DNS server cannot serve DNS
+   requests from local endpoints.  If public DNS servers are used
+   instead of using local DNS servers, some operational problems can
+   occur such as those listed below:
 
    o  "Split DNS" [RFC2775] to use the special internal-only domain
       names (e.g., "internal.example.com") in enterprise networks will
-
 
 
 
@@ -118,40 +118,43 @@ Internet-Draft          DoT/DoH server discovery              April 2019
       resolved in home networks.
 
    o  Content Delivery Networks (CDNs) that map traffic based on DNS may
-      lose the ability to direct end-user traffic to a nearby cluster in
-      cases where a DNS service is being used that is not affiliated
-      with the local network and which does not send "EDNS Client
-      Subnet" (ECS) information [RFC7871] to the CDN's DNS authorities
-      [CDN].
+      lose the ability to direct end-user traffic to a nearby service-
+      specific cluster in cases where a DNS service is being used that
+      is not affiliated with the local network and which does not send
+      "EDNS Client Subnet" (ECS) information [RFC7871] to the CDN's DNS
+      authorities [CDN].
 
    If public DNS servers are used instead of using local DNS servers,
-   the following paragraph discusses the impact on Network-based
-   security:
+   the following discusses the impact on network-based security:
 
-   Various network security services are provided by Enterprise, secure
-   home and wall-gardened networks to protect endpoints (e.g,. Hosts,
-   IoT devices).  [I-D.camwinget-tls-use-cases] discusses some of the
-   Network-based security use cases.  These network security services
-   act on DNS requests from endpoints.  However, if an endpoint is
-   configured to use public DNS-over-(D)TLS or DNS-over-HTTPS servers,
-   network security services cannot act efficiently on DNS requests from
-   the endpoints.  In order to act on DNS requests from endpoints,
-   network security services can block DNS-over-(D)TLS traffic by
-   dropping outgoing packets to destination port 853.  Identifying DNS-
-   over-HTTPS traffic is far more challenging than DNS-over-(D)TLS
-   traffic.  Network security services can try to identify the domains
-   offering DNS-over-HTTPS servers, and DNS-over-HTTPS traffic can be
-   blocked by dropping outgoing packets to these domains.  If the
-   endpoint has enabled strict privacy profile (Section 5 of [RFC8310]),
-   and the network security service blocks the traffic to the public DNS
-   server, DNS service is not available to the endpoint and ultimately
-   the endpoint cannot access Internet.  If the endpoint has enabled
-   opportunistic privacy profile (Section 5 of [RFC8310]), and the
-   network security service blocks traffic to the public DNS server, the
-   endpoint will either fallback to an encrypted connection without
-   authenticating the DNS server provided by the local network or
-   fallback to clear text DNS, and cannot exchange encrypted DNS
-   messages.
+   o  Various network security services are provided by Enterprise,
+      secure home and wall-gardened networks to protect endpoints (e.g,.
+      Hosts, IoT devices).  [I-D.camwinget-tls-use-cases] discusses some
+      of the network-based security service use cases.  These network
+      security services act on DNS requests originating from endpoints.
+
+   o  However, if an endpoint is configured to use public DNS-
+      over-(D)TLS or DNS-over-HTTPS servers, network security services
+      cannot act efficiently on DNS requests from these endpoints.
+
+   o  In order to act on DNS requests from endpoints, network security
+      services can block DNS-over-(D)TLS traffic by dropping outgoing
+      packets to destination port 853.  Identifying DNS-over-HTTPS
+      traffic is far more challenging than DNS-over-(D)TLS traffic.
+      Network security services may try to identify the domains offering
+      DNS-over-HTTPS servers, and DNS-over-HTTPS traffic can be blocked
+      by dropping outgoing packets to these domains.  If an endpoint has
+      enabled strict privacy profile (Section 5 of [RFC8310]), and the
+      network security service blocks the traffic to the public DNS
+      server, the DNS service won't be available to the endpoint and
+      ultimately the endpoint cannot access Internet-reachable services.
+
+   o  If an endpoint has enabled opportunistic privacy profile
+      (Section 5 of [RFC8310]), and the network security service blocks
+      traffic to the public DNS server, the endpoint will either
+      fallback to an encrypted connection without authenticating the DNS
+      server provided by the local network or fallback to clear text
+      DNS, and cannot exchange encrypted DNS messages.
 
    If the network security service fails to block DNS-over-(D)TLS or
    DNS-over-HTTPS traffic, this can compromise the endpoint security;
@@ -160,9 +163,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    o  The network security service cannot prevent an endpoint from
       accessing malicious domains.
 
-   o  If the endpoint is an IoT device which is configured to use public
-      DNS-over-(D)TLS or DNS-over-HTTPS servers, and if a policy
-
 
 
 Reddy, et al.            Expires October 4, 2019                [Page 3]
@@ -170,12 +170,14 @@ Reddy, et al.            Expires October 4, 2019                [Page 3]
 Internet-Draft          DoT/DoH server discovery              April 2019
 
 
-      enforcement point in the local network is programmed using a
-      Manufacturer Usage Description (MUD) file [I-D.ietf-opsawg-mud] by
+   o  If the endpoint is an IoT device which is configured to use public
+      DNS-over-(D)TLS or DNS-over-HTTPS servers, and if a policy
+      enforcement point in the local network is programmed using, for
+      example, a Manufacturer Usage Description (MUD) file [RFC8520] by
       a MUD manager to only allow intented communications to and from
       the IoT device, the policy enforcement point cannot enforce the
-      Network Access Control List rules based on domain names (Section 8
-      of [I-D.ietf-opsawg-mud]).
+      network Access Control List (ACL) rules based on domain names
+      (Section 8 of [RFC8520]).
 
    If the network security service sucessfully blocks DNS-over-(D)TLS
    and DNS-over-HTTPS traffic, this can still compromise the endpoint
@@ -185,39 +187,37 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    o  Pervasive monitoring of DNS traffic.
 
    o  An internal attacker can modify the DNS responses to re-direct the
-      client to incorrect and malicious servers.
+      client to malicious servers.
 
-   To overcome the above threats, the document proposes a mechanism to
-   automatically bootstrap the endpoints to discover and authenticate
-   the DNS-over-(D)TLS and DNS-over-HTTPS servers provided by the local
+   To overcome the above threats, this document specifies a mechanism to
+   automatically bootstrap endpoints to discover and authenticate the
+   DNS-over-(D)TLS and DNS-over-HTTPS servers provided by their local
    network.  The overall procedure can be structured into the following
    steps:
 
    o  Bootstrapping (Section 4) is necessary only when connecting to a
       new network or when the network's DNS certificate has changed.
-      Bootstrapping authenticates the network server to the endpoint.
-      After authenticating the network server, DNS server certificate
-      used by the local network is downloaded to the endpoint.  This DNS
-      server certificate enables subsequent authenticated encrypted
-      communication with the local DNS server (e.g., DNS-over-HTTPS) in
-      the connection phase.
+      Bootstrapping authenticates the Enrollment over Secure Transport
+      (EST) [RFC7030] server to the endpoint.  After authenticating the
+      EST server, DNS server certificate used by the local network is
+      downloaded to the endpoint.  This DNS server certificate enables
+      subsequent authenticated encrypted communication with the local
+      DNS server (e.g., DNS-over-HTTPS) during in the connection phase.
 
-   o  Discovery (Section 6) is performed whenever connecting to a
-      network that was previously Bootstrapped.  During discovery, the
-      endpoint is told which privacy-enabling DNS protocols, port
-      numbers, and IP addresses are supported on the local network.
+   o  Discovery (Section 6) is performed by a previously bootstrapped
+      endpoint whenever connecting to a network.  During discovery, the
+      endpoint is instructed which privacy-enabling DNS protocol(s),
+      port number(s), and IP addresses are supported on a local network.
       This effectively takes the place of DNS server IP address
       traditionally provided by IPv4 or IPv6 DHCP or by IPv6 Router
-      Advertisement [RFC6106].
+      Advertisement [RFC8106].
 
    o  Connection handshake and service invocation (Section 7): The DNS
       client initiates a (D)TLS handshake with the DNS server learned in
       the discovery phase, and validates the DNS server's identity using
       the credentials obtained in the bootstrapping phase.
 
-   Note: The strict and opportunistic privacy profiles as defined in
-   [RFC8310] only applies to DNS-over-(D)TLS protocols, there has been
-   no such distinction made for DNS-over-HTTPS protocol.
+
 
 
 
@@ -226,19 +226,23 @@ Reddy, et al.            Expires October 4, 2019                [Page 4]
 Internet-Draft          DoT/DoH server discovery              April 2019
 
 
+   Note: The strict and opportunistic privacy profiles as defined in
+   [RFC8310] only applies to DNS-over-(D)TLS protocols, there has been
+   no such distinction made for DNS-over-HTTPS protocol.
+
 2.  Scope
 
-   The aforementioned problems will be encountered in Enterprise
+   The problems discussed in Section 1 will be encountered in Enterprise
    networks.  Typically Enterprise networks do not assume that all
    devices in their network are managed by the IT team or Mobile Device
    Management (MDM) devices, especially in the quite common BYOD ("Bring
-   Your Own Device") scenario.  The mechanisms proposed in the
-   specification can be used by BYOD devices to discover and
-   authenticate DNS-over-(D)TLS and DNS-over-HTTPS servers provided by
-   the Enterprise network.  The proposed mechanism can also be used by
-   IoT devices (managed by IT team) after onboarding to discover and
-   authenticate DNS-over-(D)TLS and DNS-over-HTTPS servers provided by
-   the Enterprise network.
+   Your Own Device") scenario.  The mechanisms specified in this
+   document can be used by BYOD devices to discover and authenticate
+   DNS-over-(D)TLS and DNS-over-HTTPS servers provided by the Enterprise
+   network.  This mechanism can also be used by IoT devices (managed by
+   IT team) after onboarding to discover and authenticate DNS-
+   over-(D)TLS and DNS-over-HTTPS servers provided by the Enterprise
+   network.
 
 3.  Terminology
 
@@ -257,23 +261,19 @@ Internet-Draft          DoT/DoH server discovery              April 2019
 
 4.  Bootstrapping Endpoint Devices
 
-   The following steps explain the mechanism to automatically bootstrap
+   The following steps detail the mechanism to automatically bootstrap
    an endpoint with the local network's DNS server certificate:
 
    1.  The endpoint authenticates to the local network and discovers the
-       EST server using the procedure discussed in Section 8.
+       Enrollment over Secure Transport (EST) [RFC7030] server using the
+       procedure discussed in Section 8.
 
-   2.  The endpoint establishes provisional TLS connection with the EST
-       server, i.e. the endpoint provisionally accepts the unverified
+   2.  The endpoint establishes provisional TLS connection with that EST
+       server, i.e., the endpoint provisionally accepts the unverified
        TLS server certificate.  However, the endpoint MUST authenticate
-       the EST server before it can accept the DNS server certificate.
-       The endpoint either uses password-based authenticated key
-       exchange (PAKE) with TLS 1.3 [I-D.barnes-tls-pake] as an
-       authentication method or uses the mutual authentication protocol
-       for HTTP [RFC8120] to authenticate the discovered EST server.
-       PAKE is an authentication method that allows the use of usernames
-       and passwords over unencrypted channels without revealing the
-       passwords to an eavesdropper.  Similarty, the mutual
+       the EST server before it accepts the DNS server certificate.  The
+       endpoint either uses password-based authenticated key exchange
+       (PAKE) with TLS 1.3 [I-D.barnes-tls-pake] as an authentication
 
 
 
@@ -282,16 +282,22 @@ Reddy, et al.            Expires October 4, 2019                [Page 5]
 Internet-Draft          DoT/DoH server discovery              April 2019
 
 
-       authentication for Hypertext Transfer Protocol (HTTP) is based on
-       PAKE and provides mutual authentication between a HTTP client and
-       an HTTP server using username and password as credentials.  The
-       cryptographic algorithms to use with the mutual authentication
-       protocol for HTTP are defined in [RFC8121].
+       method or uses the mutual authentication protocol for HTTP
+       [RFC8120] to authenticate the discovered EST server.
+
+       As a reminder, PAKE is an authentication method that allows the
+       use of usernames and passwords over unencrypted channels without
+       revealing the passwords to an eavesdropper.  Similarty, the
+       mutual authentication for HTTP is based on PAKE and provides
+       mutual authentication between an HTTP client and an HTTP server
+       using username and password as credentials.  The cryptographic
+       algorithms to use with the mutual authentication protocol for
+       HTTP are defined in [RFC8121].
 
    3.  The endpoint needs to use PAKE scheme to perform authentication
-       the first time it connects EST server.  If the EST server
+       the first time it connects to an EST server.  If the EST server
        authentication is successful, the server's identity can be used
-       to authenticate subsequent TLS connections to the EST server.
+       to authenticate subsequent TLS connections to that EST server.
        The endpoint generates the reference identifier for the EST
        server using the DNS-ID identifier type in the EST server
        certificate.  On subsequent connections to the EST server, the
@@ -305,26 +311,20 @@ Internet-Draft          DoT/DoH server discovery              April 2019
        the EST server.  The certificate provisioned to the DNS server in
        the local network will be treated as a End-Entity certificate.
        As a reminder, the End-Entity certificates must be validated by
-       the endpoint using a authorized trust anchor (Section 3.2 of
+       the endpoint using an authorized trust anchor (Section 3.2 of
        [RFC8295]).  The endpoint needs to identify the certificate
        provisioned to the DNS server.  The SRV-ID identifier type
        [RFC6125] within subjectAltName entry MUST be used to identify
-       the DNS server certificate.  For example, DNS server certificate
-       will include SRV-ID "_domain-s.example.net" along with DNS-ID
-       "example.net".  The SRV service label "domain-s" is defined in
-       Section 6 of [RFC7858].  As a reminder, the protocol component is
-       not included in the SRV-ID [RFC4985].
+       the DNS server certificate.
 
-   The following Figure 1 illustrates a sequence diagram for
-   bootstrapping an endpoint with the local network's DNS server
-   certificate.
+       For example, DNS server certificate will include SRV-ID "_domain-
+       s.example.net" along with DNS-ID "example.net".  The SRV service
+       label "domain-s" is defined in Section 6 of [RFC7858].  As a
+       reminder, the protocol component is not included in the SRV-ID
+       [RFC4985].
 
-
-
-
-
-
-
+   Figure 1 illustrates a sequence diagram for bootstrapping an endpoint
+   with the local network's DNS server certificate.
 
 
 
@@ -370,7 +370,7 @@ Internet-Draft          DoT/DoH server discovery              April 2019
 
    The following steps explain the mechanism to automatically bootstrap
    IoT devices with local network's CA certificates and DNS server
-   certificate.
+   certificate:
 
    o  Bootstrapping Remote Secure Key Infrastructures (BRSKI) discussed
       in [I-D.ietf-anima-bootstrapping-keyinfra] provides a solution for
@@ -382,7 +382,7 @@ Internet-Draft          DoT/DoH server discovery              April 2019
       bootstrap the IoT device using the IoT manufacturer provisioned
       X.509 certificate, in combination with a registrar provided by the
       local network and IoT device manufacturer's authorizing service
-      (MASA).
+      (MASA):
 
       1.  The IoT device authenticates to the local network using the
           IoT manufacturer provisioned X.509 certificate.  The IoT
@@ -403,27 +403,21 @@ Internet-Draft          DoT/DoH server discovery              April 2019
           stores the CA's public key and validates the provisional TLS
           connection to the registrar.
 
-      3.  The IoT device requests the full Enrollment over Secure
-          Transport (EST) [RFC7030] distribution of current CA
-          certificates (Section 5.9.1 in
+      3.  The IoT device requests the full EST distribution of current
+          CA certificates (Section 5.9.1 in
           [I-D.ietf-anima-bootstrapping-keyinfra]) from the registrar
           operating as a BRSKI-EST server.  The IoT devices stores the
           CA certificates as Explicit Trust Anchor database entries.
           The IoT device uses the Explicit Trust Anchor database to
           validate the DNS server certificate.
 
-      4.  The IoT device learns the End-Entity certificates [RFC8295]
-          from the BRSKI-EST server.  The certificate provisioned to the
-          DNS server in the local network will be treated as a End-
-          Entity certificate.  The IoT device needs to identify the
-          certificate provisioned to the DNS server.  The SRV-ID
-          identifier type [RFC6125] within subjectAltName entry MUST be
-          used to identify the DNS server certificate.  For example, DNS
-          server certificate will include SRV-ID "_domain-s.example.net"
-          along with DNS-ID "example.net".  The SRV service label
-          "domain-s" is defined in Section 6 of [RFC7858].  As a
-          reminder, the protocol component is not included in the SRV-ID
-          [RFC4985].
+      4.  The IoT device learns the End-Entity certificates from the
+          BRSKI-EST server.  The certificate provisioned to the DNS
+          server in the local network will be treated as an End-Entity
+          certificate.  The IoT device needs to identify the certificate
+          provisioned to the DNS server.  The SRV-ID identifier type
+          within subjectAltName entry MUST be used to identify the DNS
+          server certificate.
 
 6.  DNS-over-(D)TLS and DNS-over-HTTPS Server Discovery Procedure
 
@@ -442,6 +436,12 @@ Internet-Draft          DoT/DoH server discovery              April 2019
       authentication domain name and the 'DPRIVE' application service
       tag to learn the protocols DNS-over-TLS, DNS-over-DTLS, and DNS-
       over-HTTPS supported by the DNS server and the DNS privacy
+      protocol preferred by the DNS server administrators.  The S-NAPTR
+      lookup is performed using an recursive DNS resolver discovered
+      from an untrusted source (such as DHCP).
+
+   o  In the example depicted in Figure 2, for authentication domain
+      name 'example.net', the resolution algorithm will result in the
 
 
 
@@ -450,12 +450,6 @@ Reddy, et al.            Expires October 4, 2019                [Page 8]
 Internet-Draft          DoT/DoH server discovery              April 2019
 
 
-      protocol preferred by the DNS server administrators.  The S-NAPTR
-      lookup is performed using an recursive DNS resolver discovered
-      from an untrusted source (such as DHCP).
-
-   o  In the example below, for authentication domain name
-      'example.net', the resolution algorithm will result in the
       privacy-enabling protocols supported by the DNS server and usable
       DNS server IP addresses and port numbers.
 
@@ -493,11 +487,17 @@ Internet-Draft          DoT/DoH server discovery              April 2019
       time period that is appropriate for the encountered error (e.g.,
       NXDOMAIN, timeout, etc.).
 
-7.  Connection handshake and service invocation
+7.  Connection Handshake and Service Invocation
 
    The DNS client initiates (D)TLS handshake with the DNS server, the
-   server presents its certificate in ServerHello message, and the DNS
-   client MUST match the DNS server certificate downloaded in step 4 in
+   DNS server presents its certificate in ServerHello message, and the
+   DNS client MUST match the DNS server certificate downloaded in Step 4
+   in Section 4 or Section 5 with the certificate provided by the DNS
+   server in (D)TLS handshake.  If the match is successful, the DNS
+   client MUST validate the server certificate using the Implicit Trust
+   Anchor database (i.e., the DNS server certificate must pass PKIX
+   certification path validation).
+
 
 
 
@@ -505,12 +505,6 @@ Reddy, et al.            Expires October 4, 2019                [Page 9]
 
 Internet-Draft          DoT/DoH server discovery              April 2019
 
-
-   Section 4 and Section 5 with the certificate provided by the DNS
-   server in (D)TLS handshake.  If the match is successful, the DNS
-   client MUST validate the server certificate using the Implicit Trust
-   Anchor database (i.e., the DNS server certificate must pass PKIX
-   certification path validation).
 
    If the match is successful and server certificate is successfully
    validated, the client continues with the connection as normal.
@@ -520,7 +514,7 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    privacy-enabling DNS server provided by the local network, the DNS
    client can fallback to the privacy-enabling public DNS server.
 
-8.  EST service Discovery Procedure
+8.  EST Service Discovery Procedure
 
    DNS-based Service Discovery (DNS-SD) [RFC6763] and Multicast DNS
    (mDNS) [RFC6762] provide generic solutions for discovering services
@@ -551,9 +545,15 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    server configuration.  EST client application receive these
    gratuitous packets and cache information contained in it.
 
+9.  Network Reattachment
 
-
-
+   On subsequent attachments to the network, if the DNS server
+   certificate is revoked or expired, the endpoint discovers and
+   initiates TLS handshake with the EST server, and uses the validation
+   techniques described in [RFC6125] to compare the reference identifier
+   (created in Step 2 of Section 4 in this document) to the EST server
+   certificate and verifies the entire certification path as per
+   [RFC5280].  The endpoint then performs Step 4 of Section 4 to get the
 
 
 
@@ -562,22 +562,14 @@ Reddy, et al.            Expires October 4, 2019               [Page 10]
 Internet-Draft          DoT/DoH server discovery              April 2019
 
 
-9.  Network reattachment
-
-   On subsequent attachments to the network, the endpoint discovers and
-   initiates TLS handshake with the EST server, and uses the validation
-   techniques described in [RFC6125] to compare the reference identifier
-   (created in Step 2 of Section 4 in this specification) to the EST
-   server certificate and verifies the entire certification path per
-   [RFC5280].  The endpoint then performs Step 4 of Section 4 to get the
    DNS server certificate from the EST server, discovers the privacy-
    enabling DNS server, initiates (D)TLS handshake with the DNS server
    and follows the mechanism discussed in Section 7 to validate the DNS
    server certificate.
 
-   The following Figure 3 illustrates a sequence diagram for
-   bootstrapping an endpoint with the local network's DNS server
-   certificate on subsequent attachments to the network.
+   Figure 3 illustrates a sequence diagram for bootstrapping an endpoint
+   with the local network's DNS server certificate on subsequent
+   attachments to the network.
 
  +----------+                                                   +------------+  +------------+
  | Endpoint |                                                   | EST Server |  | DNS Server |
@@ -610,14 +602,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    [RFC7626] contexts.  The endpoint may not know if the DNS-over-(D)TLS
    or DNS-over-HTTPS server in the local network has a privacy
    preserving data policy.  A new privacy certificate extension is
-
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 11]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
-
    defined that identifies the privacy preserving data policy of the DNS
    server.
 
@@ -626,6 +610,13 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    Like all X.509 certificate extensions, the privacy certificate
    extension is defined using ASN.1 [ASN1-88].  The non-critical privacy
    extension is identified by id-pe-privacy.
+
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 11]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
 
       PKIX Object Identifier Registry
 
@@ -651,7 +642,7 @@ Internet-Draft          DoT/DoH server discovery              April 2019
       address is indeed logged, it is stored in temporary or permanant
       logs.
 
-   o  If the server clears the stored transaction data (e.g.  DNS
+   o  If the server clears the stored transaction data (e.g., DNS
       messages) or not, and if the server clears the stored transaction
       data, the period for which the transaction data is stored.
 
@@ -663,7 +654,16 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    o  If the transaction data is shared or sold to third parties.
 
    o  If the DNS server will block DNS resolution of certain domains
-      (e.g. malicious domains).
+      (e.g., malicious domains).
+
+   o  A URL that points to the privacy preserving data policy, and a URL
+      that points to the security assessment report of the DNS server by
+      a third party auditor.
+
+10.2.  Privacy Extension Syntax
+
+   The syntax for the privacy extension is as follows:
+
 
 
 
@@ -673,14 +673,6 @@ Reddy, et al.            Expires October 4, 2019               [Page 12]
 
 Internet-Draft          DoT/DoH server discovery              April 2019
 
-
-   o  A URL that points to the privacy preserving data policy, and a URL
-      that points to the security assessment report of the DNS server by
-      a third party auditor.
-
-10.2.  Privacy Extension Syntax
-
-   The syntax for the privacy extension is:
 
    Privacy ::=  CHOICE  {
      none                 NULL,             -- No privacy policy provided
@@ -720,8 +712,16 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    The bootstrapping procedure to obtain the certificate of the local
    networks DNS server uses a client identity and password to
    authenticate the EST server using PAKE schemes.  Security
-   considerations in [I-D.barnes-tls-pake] and [RFC8120] need to be
-   taken into consideration.
+   considerations such as those discussed in [I-D.barnes-tls-pake] or
+   [RFC8120] and [RFC8121] need to be taken into consideration.
+
+   Users cannot be expected to enable or disable the bootstrapping or
+   the discovery procedure as they switch networks.  Thus, it is
+   RECOMMENDED that users indicate to their system in some way that they
+   desire bootstrapping to be performed when connecting to a specific
+   network, similar to the way users disable VPN connection in specific
+   network (e.g., Enterprise network) and enable VPN connection by
+   default in other networks.
 
 
 
@@ -730,15 +730,7 @@ Reddy, et al.            Expires October 4, 2019               [Page 13]
 Internet-Draft          DoT/DoH server discovery              April 2019
 
 
-   Users cannot be expected to enable or disable the bootstrapping or
-   the discovery procedure as they switch networks.  Thus, it is
-   RECOMMENDED that users indicate to their system in some way that they
-   desire bootstrapping to be performed when connecting to a specific
-   network, similar to the way users disable VPN connection in specific
-   network (e.g.  Enterprise network) and enable VPN connection by
-   default in other networks.
-
-   If the endpoint has enabled strict privacy profile, and the network
+   If an endpoint has enabled strict privacy profile, and the network
    security service blocks the traffic to the privacy-enabling public
    DNS server, a hard failure occurs and the user is notified.  The user
    has a choice to switch to another network or if the user trusts the
@@ -759,7 +751,7 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    response is spoofed.
 
    Security considerations in [I-D.ietf-anima-bootstrapping-keyinfra]
-   need to be taken into consideration.
+   need to be taken into consideration for IoT devices.
 
 12.  IANA Considerations
 
@@ -776,16 +768,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    IANA is requested to add the following entry in the "SMI Security for
    PKIX Module Identifier" (1.3.6.1.5.5.7.0) registry:
 
-
-
-
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 14]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
-
       Decimal  Description                     References
       -------  ------------------------------  ---------------------
 
@@ -796,6 +778,13 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    This document requests IANA to make the following allocations from
    the registry available at: https://www.iana.org/assignments/s-naptr-
    parameters/s-naptr-parameters.xhtml.
+
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 14]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
 
 12.1.1.  DNS Application Service Tag Registration
 
@@ -835,13 +824,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
 
    o  Security Considerations: See Section 11
 
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 15]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
-
    o  Contact Information: <one of the authors>
 
 13.  Acknowledgments
@@ -850,19 +832,19 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    McManus, Eliot Lear and Sara Dickinson for the discussion and
    comments.
 
+
+
+
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 15]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
+
 14.  References
 
 14.1.  Normative References
-
-   [I-D.barnes-tls-pake]
-              Barnes, R. and O. Friel, "Usage of PAKE with TLS 1.3",
-              draft-barnes-tls-pake-04 (work in progress), July 2018.
-
-   [I-D.ietf-anima-bootstrapping-keyinfra]
-              Pritikin, M., Richardson, M., Behringer, M., Bjarnason,
-              S., and K. Watsen, "Bootstrapping Remote Secure Key
-              Infrastructures (BRSKI)", draft-ietf-anima-bootstrapping-
-              keyinfra-19 (work in progress), March 2019.
 
    [I-D.ietf-doh-resolver-associated-doh]
               Hoffman, P., "Associating a DoH Server with a Resolver",
@@ -890,14 +872,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
               (CRL) Profile", RFC 5280, DOI 10.17487/RFC5280, May 2008,
               <https://www.rfc-editor.org/info/rfc5280>.
 
-
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 16]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
-
    [RFC6125]  Saint-Andre, P. and J. Hodges, "Representation and
               Verification of Domain-Based Application Service Identity
               within Internet Public Key Infrastructure Using X.509
@@ -917,6 +891,13 @@ Internet-Draft          DoT/DoH server discovery              April 2019
               Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
               <https://www.rfc-editor.org/info/rfc6763>.
 
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 16]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
+
    [RFC7030]  Pritikin, M., Ed., Yee, P., Ed., and D. Harkins, Ed.,
               "Enrollment over Secure Transport", RFC 7030,
               DOI 10.17487/RFC7030, October 2013,
@@ -932,11 +913,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
               DOI 10.17487/RFC8094, February 2017,
               <https://www.rfc-editor.org/info/rfc8094>.
 
-   [RFC8120]  Oiwa, Y., Watanabe, H., Takagi, H., Maeda, K., Hayashi,
-              T., and Y. Ioku, "Mutual Authentication Protocol for
-              HTTP", RFC 8120, DOI 10.17487/RFC8120, April 2017,
-              <https://www.rfc-editor.org/info/rfc8120>.
-
    [RFC8121]  Oiwa, Y., Watanabe, H., Takagi, H., Maeda, K., Hayashi,
               T., and Y. Ioku, "Mutual Authentication Protocol for HTTP:
               Cryptographic Algorithms Based on the Key Agreement
@@ -946,13 +922,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/info/rfc8174>.
-
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 17]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
 
    [RFC8295]  Turner, S., "EST (Enrollment over Secure Transport)
               Extensions", RFC 8295, DOI 10.17487/RFC8295, January 2018,
@@ -976,39 +945,38 @@ Internet-Draft          DoT/DoH server discovery              April 2019
               Committee, "Specification of Abstract Syntax Notation One
               (ASN.1)", CCITT Recommendation X.208, 1988.".
 
+
+
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 17]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
+
    [CDN]      "End-User Mapping: Next Generation Request Routing for
               Content Delivery", 2015,
               <https://conferences.sigcomm.org/sigcomm/2015/pdf/papers/
               p167.pdf>.
+
+   [I-D.barnes-tls-pake]
+              Barnes, R. and O. Friel, "Usage of PAKE with TLS 1.3",
+              draft-barnes-tls-pake-04 (work in progress), July 2018.
 
    [I-D.camwinget-tls-use-cases]
               Andreasen, F., Cam-Winget, N., and E. Wang, "TLS 1.3
               Impact on Network-Based Security", draft-camwinget-tls-
               use-cases-04 (work in progress), March 2019.
 
-   [I-D.ietf-opsawg-mud]
-              Lear, E., Droms, R., and D. Romascanu, "Manufacturer Usage
-              Description Specification", draft-ietf-opsawg-mud-25 (work
-              in progress), June 2018.
+   [I-D.ietf-anima-bootstrapping-keyinfra]
+              Pritikin, M., Richardson, M., Behringer, M., Bjarnason,
+              S., and K. Watsen, "Bootstrapping Remote Secure Key
+              Infrastructures (BRSKI)", draft-ietf-anima-bootstrapping-
+              keyinfra-19 (work in progress), March 2019.
 
    [RFC2775]  Carpenter, B., "Internet Transparency", RFC 2775,
               DOI 10.17487/RFC2775, February 2000,
               <https://www.rfc-editor.org/info/rfc2775>.
-
-   [RFC6106]  Jeong, J., Park, S., Beloeil, L., and S. Madanapalli,
-              "IPv6 Router Advertisement Options for DNS Configuration",
-              RFC 6106, DOI 10.17487/RFC6106, November 2010,
-              <https://www.rfc-editor.org/info/rfc6106>.
-
-
-
-
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 18]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
 
    [RFC7626]  Bortzmeyer, S., "DNS Privacy Considerations", RFC 7626,
               DOI 10.17487/RFC7626, August 2015,
@@ -1019,10 +987,33 @@ Internet-Draft          DoT/DoH server discovery              April 2019
               DOI 10.17487/RFC7871, May 2016,
               <https://www.rfc-editor.org/info/rfc7871>.
 
+   [RFC8106]  Jeong, J., Park, S., Beloeil, L., and S. Madanapalli,
+              "IPv6 Router Advertisement Options for DNS Configuration",
+              RFC 8106, DOI 10.17487/RFC8106, March 2017,
+              <https://www.rfc-editor.org/info/rfc8106>.
+
+   [RFC8120]  Oiwa, Y., Watanabe, H., Takagi, H., Maeda, K., Hayashi,
+              T., and Y. Ioku, "Mutual Authentication Protocol for
+              HTTP", RFC 8120, DOI 10.17487/RFC8120, April 2017,
+              <https://www.rfc-editor.org/info/rfc8120>.
+
    [RFC8310]  Dickinson, S., Gillmor, D., and T. Reddy, "Usage Profiles
               for DNS over TLS and DNS over DTLS", RFC 8310,
               DOI 10.17487/RFC8310, March 2018,
               <https://www.rfc-editor.org/info/rfc8310>.
+
+
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 18]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
+
+   [RFC8520]  Lear, E., Droms, R., and D. Romascanu, "Manufacturer Usage
+              Description Specification", RFC 8520,
+              DOI 10.17487/RFC8520, March 2019,
+              <https://www.rfc-editor.org/info/rfc8520>.
 
 Authors' Addresses
 
@@ -1055,6 +1046,15 @@ Authors' Addresses
    France
 
    Email: mohamed.boucadair@orange.com
+
+
+
+
+
+
+
+
+
 
 
 
