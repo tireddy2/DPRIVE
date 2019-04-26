@@ -72,7 +72,7 @@ Table of Contents
    4.  Bootstrapping Endpoint Devices  . . . . . . . . . . . . . . .   5
    5.  Bootstrapping IoT Devices . . . . . . . . . . . . . . . . . .   7
    6.  DNS-over-(D)TLS and DNS-over-HTTPS Server Discovery Procedure   8
-   7.  Connection Handshake and Service Invocation . . . . . . . . .   9
+   7.  Connection Handshake and Service Invocation . . . . . . . . .  10
    8.  EST Service Discovery Procedure . . . . . . . . . . . . . . .  10
      8.1.  mDNS  . . . . . . . . . . . . . . . . . . . . . . . . . .  10
    9.  Network Reattachment  . . . . . . . . . . . . . . . . . . . .  11
@@ -298,7 +298,7 @@ Internet-Draft          DoT/DoH server discovery              April 2019
        the first time it connects to an EST server.  If the EST server
        authentication is successful, the server's identity can be used
        to authenticate subsequent TLS connections to that EST server.
-       The endpoint generates the reference identifier for the EST
+       The endpoint configures the reference identifier for the EST
        server using the DNS-ID identifier type in the EST server
        certificate.  On subsequent connections to the EST server, the
        endpoint MUST validate the EST server certificate using the
@@ -323,13 +323,13 @@ Internet-Draft          DoT/DoH server discovery              April 2019
        reminder, the protocol component is not included in the SRV-ID
        [RFC4985].
 
-   Figure 1 illustrates a sequence diagram for bootstrapping an endpoint
-   with the local network's DNS server certificate.
-
-
-
-
-
+   5.  The endpoint configures the authentication domain name (ADN)
+       (defined in [RFC8310]) for the DNS server from the DNS-ID
+       identifier type within subjectAltName entry in the DNS server
+       certificate.  The DNS server certificate is associated with the
+       ADN to be matched with the certificate given by the DNS server in
+       (D)TLS.  To some extent, this approach is similar to certificate
+       usage 1 defined in [RFC6698].
 
 
 
@@ -337,6 +337,9 @@ Reddy, et al.            Expires October 4, 2019                [Page 6]
 
 Internet-Draft          DoT/DoH server discovery              April 2019
 
+
+   Figure 1 illustrates a sequence diagram for bootstrapping an endpoint
+   with the local network's DNS server certificate.
 
  +----------+                                     +--------+  +--------+
  | Endpoint |                                     |  EST   |  |  DNS   |
@@ -365,7 +368,8 @@ Internet-Draft          DoT/DoH server discovery              April 2019
  [Identify the DNS server certificate in EE             |          |
   certificates to match with the certificate            |          |
   by the DNS server in (D)TLS handshake]                |          |
-         |                                              |          |
+                                                        |          |
+ [Configure ADN and associate DNS server certificate]   |          |
          |                                              |          |
 
                  Figure 1: Bootstrapping Endpoint Devices
@@ -382,10 +386,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
       provision credentials on devices to be used to operationally
       access networks.  In addition, BRSKI provides an automated
       mechanism for the bootstrap distribution of CA certificates from
-      the EST server.  The IoT device can use BRSKI to automatically
-      bootstrap the IoT device using the IoT manufacturer provisioned
-      X.509 certificate, in combination with a registrar provided by the
-
 
 
 
@@ -394,6 +394,9 @@ Reddy, et al.            Expires October 4, 2019                [Page 7]
 Internet-Draft          DoT/DoH server discovery              April 2019
 
 
+      the EST server.  The IoT device can use BRSKI to automatically
+      bootstrap the IoT device using the IoT manufacturer provisioned
+      X.509 certificate, in combination with a registrar provided by the
       local network and IoT device manufacturer's authorizing service
       (MASA):
 
@@ -424,6 +427,12 @@ Internet-Draft          DoT/DoH server discovery              April 2019
           within subjectAltName entry MUST be used to identify the DNS
           server certificate.
 
+      5.  The endpoint configures the ADN for the DNS server from the
+          DNS-ID identifier type within subjectAltName entry in the DNS
+          server certificate.  The DNS server certificate is associated
+          with the ADN to be matched with the certificate given by the
+          DNS server in (D)TLS.
+
 6.  DNS-over-(D)TLS and DNS-over-HTTPS Server Discovery Procedure
 
    This specification defines "DPRIVE" as the application service tag
@@ -433,15 +442,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    network supporting DNS-over-TLS, DNS-over-DTLS and DNS-over-HTTPS
    protocols by using the following discovery mechanism:
 
-   o  The DNS client retrieves the authentication domain name for the
-      DNS server from the DNS-ID identifier type within subjectAltName
-      entry in the DNS server certificate.
-
-   o  The DNS client then makes an S-NAPTR [RFC3958] lookup with the
-      authentication domain name and the 'DPRIVE' application service
-      tag to learn the protocols DNS-over-TLS, DNS-over-DTLS, and DNS-
-      over-HTTPS supported by the DNS server and the DNS privacy
-      protocol preferred by the DNS server administrators.  The S-NAPTR
 
 
 
@@ -450,6 +450,11 @@ Reddy, et al.            Expires October 4, 2019                [Page 8]
 Internet-Draft          DoT/DoH server discovery              April 2019
 
 
+   o  The DNS client makes an S-NAPTR [RFC3958] lookup with the
+      authentication domain name and the 'DPRIVE' application service
+      tag to learn the protocols DNS-over-TLS, DNS-over-DTLS, and DNS-
+      over-HTTPS supported by the DNS server and the DNS privacy
+      protocol preferred by the DNS server administrators.  The S-NAPTR
       lookup is performed using an recursive DNS resolver discovered
       from an untrusted source (such as DHCP).
 
@@ -492,12 +497,7 @@ Internet-Draft          DoT/DoH server discovery              April 2019
       time period that is appropriate for the encountered error (e.g.,
       NXDOMAIN, timeout, etc.).
 
-7.  Connection Handshake and Service Invocation
 
-   The DNS client initiates (D)TLS handshake with the DNS server, the
-   DNS server presents its certificate in ServerHello message, and the
-   DNS client MUST match the DNS server certificate downloaded in Step 4
-   in Section 4 or Section 5 with the certificate provided by the DNS
 
 
 
@@ -506,6 +506,12 @@ Reddy, et al.            Expires October 4, 2019                [Page 9]
 Internet-Draft          DoT/DoH server discovery              April 2019
 
 
+7.  Connection Handshake and Service Invocation
+
+   The DNS client initiates (D)TLS handshake with the DNS server, the
+   DNS server presents its certificate in ServerHello message, and the
+   DNS client MUST match the DNS server certificate downloaded in Step 4
+   in Section 4 or Section 5 with the certificate provided by the DNS
    server in (D)TLS handshake.  If the match is successful, the DNS
    client MUST validate the server certificate using the Implicit Trust
    Anchor database (i.e., the DNS server certificate must pass PKIX
@@ -547,12 +553,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
 
    A EST server can send out gratuitous multicast DNS answer packets
    whenever it starts up, wakes from sleep, or detects a change in EST
-   server configuration.  EST client application receive these
-   gratuitous packets and cache information contained in it.
-
-
-
-
 
 
 
@@ -562,23 +562,61 @@ Reddy, et al.            Expires October 4, 2019               [Page 10]
 Internet-Draft          DoT/DoH server discovery              April 2019
 
 
+   server configuration.  EST client application receive these
+   gratuitous packets and cache information contained in it.
+
 9.  Network Reattachment
 
-   On subsequent attachments to the network, if the DNS server
-   certificate is revoked or expired, the endpoint discovers and
-   initiates TLS handshake with the EST server, and uses the validation
-   techniques described in [RFC6125] to compare the reference identifier
-   (created in Step 2 of Section 4 in this document) to the EST server
-   certificate and verifies the entire certification path as per
-   [RFC5280].  The endpoint then performs Step 4 of Section 4 to get the
-   DNS server certificate from the EST server, discovers the privacy-
+   On subsequent attachments to the network, the endpoint discovers the
+   privacy-enabling DNS server using the authentication domain name
+   (configured in Step 5 of Section 4 or Section 5), initiates (D)TLS
+   handshake with the DNS server and follows the mechanism discussed in
+   Section 7 to validate the DNS server certificate.
+
+   If the DNS server certificate is changed or invalid (e.g., revoked or
+   expired) or the procedure to discover the privacy-enabling DNS server
+   fails, the endpoint discovers and initiates TLS handshake with the
+   EST server, and uses the validation techniques described in [RFC6125]
+   to compare the reference identifier (created in Step 2 of Section 4
+   in this document) to the EST server certificate and verifies the
+   entire certification path as per [RFC5280].  The endpoint then gets
+   the DNS server certificate from the EST server.  If the DNS-ID
+   identifier type within subjectAltName entry in the DNS server
+   certificate does not match the configured ADN, the ADN is replaced
+   with the DNS-ID identifier type.  The DNS server certificate
+   associated with the ADN is replaced with the one provided by the EST
+   server.  If the ADN has changed, the endpoint discovers the privacy-
    enabling DNS server, initiates (D)TLS handshake with the DNS server
    and follows the mechanism discussed in Section 7 to validate the DNS
    server certificate.
 
-   Figure 3 illustrates a sequence diagram for bootstrapping an endpoint
-   with the local network's DNS server certificate on subsequent
-   attachments to the network.
+   Figure 3 illustrates a sequence diagram for re-configuring an
+   endpoint with ADN and local network's DNS server certificate on
+   subsequent attachments to the network.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 11]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
 
  +----------+                                     +--------+  +--------+
  | Endpoint |                                     |  EST   |  |  DNS   |
@@ -601,22 +639,13 @@ Internet-Draft          DoT/DoH server discovery              April 2019
  [Identify the DNS server certificate in EE             |          |
   certificates to match with the certificate            |          |
   by the DNS server in (D)TLS handshake]                |          |
-         |                                              |          |
+                                                        |          |
+ [Re-configure ADN and associate DNS server certificate]|          |
          |                                              |          |
 
 
    Figure 3: Bootstrapping Endpoint Devices on subsequent attachments to
-                               the network.
-
-
-
-
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 11]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
+                                the network
 
 10.  Privacy Considerations
 
@@ -633,6 +662,17 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    Like all X.509 certificate extensions, the privacy certificate
    extension is defined using ASN.1 [ASN1-88].  The non-critical privacy
    extension is identified by id-pe-privacy.
+
+
+
+
+
+
+
+Reddy, et al.            Expires October 4, 2019               [Page 12]
+
+Internet-Draft          DoT/DoH server discovery              April 2019
+
 
       PKIX Object Identifier Registry
 
@@ -667,13 +707,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
       partners.  If anonymized data or client identifiable data is
       shared with partners.
 
-
-
-Reddy, et al.            Expires October 4, 2019               [Page 12]
-
-Internet-Draft          DoT/DoH server discovery              April 2019
-
-
    o  If the transaction data is shared or sold to third parties.
 
    o  If the DNS server will block DNS resolution of certain domains
@@ -686,39 +719,6 @@ Internet-Draft          DoT/DoH server discovery              April 2019
 10.2.  Privacy Extension Syntax
 
    The syntax for the privacy extension is as follows:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1052,10 +1052,10 @@ Internet-Draft          DoT/DoH server discovery              April 2019
               DOI 10.17487/RFC2775, February 2000,
               <https://www.rfc-editor.org/info/rfc2775>.
 
-   [RFC7626]  Bortzmeyer, S., "DNS Privacy Considerations", RFC 7626,
-              DOI 10.17487/RFC7626, August 2015,
-              <https://www.rfc-editor.org/info/rfc7626>.
-
+   [RFC6698]  Hoffman, P. and J. Schlyter, "The DNS-Based Authentication
+              of Named Entities (DANE) Transport Layer Security (TLS)
+              Protocol: TLSA", RFC 6698, DOI 10.17487/RFC6698, August
+              2012, <https://www.rfc-editor.org/info/rfc6698>.
 
 
 
@@ -1065,6 +1065,10 @@ Reddy, et al.            Expires October 4, 2019               [Page 19]
 
 Internet-Draft          DoT/DoH server discovery              April 2019
 
+
+   [RFC7626]  Bortzmeyer, S., "DNS Privacy Considerations", RFC 7626,
+              DOI 10.17487/RFC7626, August 2015,
+              <https://www.rfc-editor.org/info/rfc7626>.
 
    [RFC7871]  Contavalli, C., van der Gaast, W., Lawrence, D., and W.
               Kumari, "Client Subnet in DNS Queries", RFC 7871,
@@ -1109,11 +1113,7 @@ Authors' Addresses
    Email: dan@danwing.org
 
 
-   Michael C. Richardson
-   Sandelman Software Works
-   USA
 
-   Email: mcr+ietf@sandelman.ca
 
 
 
@@ -1122,19 +1122,19 @@ Reddy, et al.            Expires October 4, 2019               [Page 20]
 Internet-Draft          DoT/DoH server discovery              April 2019
 
 
+   Michael C. Richardson
+   Sandelman Software Works
+   USA
+
+   Email: mcr+ietf@sandelman.ca
+
+
    Mohamed Boucadair
    Orange
    Rennes  35000
    France
 
    Email: mohamed.boucadair@orange.com
-
-
-
-
-
-
-
 
 
 

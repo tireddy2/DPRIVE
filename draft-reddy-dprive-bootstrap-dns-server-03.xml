@@ -287,8 +287,8 @@
           the first time it connects to an EST server. If the EST server
           authentication is successful, the server's identity can be used to
           authenticate subsequent TLS connections to that EST server. The
-          endpoint generates the reference identifier for the EST server using
-          the DNS-ID identifier type in the EST server certificate. On
+          endpoint configures the reference identifier for the EST server
+          using the DNS-ID identifier type in the EST server certificate. On
           subsequent connections to the EST server, the endpoint MUST validate
           the EST server certificate using the Implict Trust Anchor database
           (i.e, the EST server certificate must pass PKIX certification path
@@ -311,6 +311,14 @@
           Section 6 of <xref target="RFC7858"></xref>. As a reminder, the
           protocol component is not included in the SRV-ID <xref
           target="RFC4985"></xref>.</t>
+
+          <t>The endpoint configures the authentication domain name (ADN)
+          (defined in <xref target="RFC8310"></xref>) for the DNS server from
+          the DNS-ID identifier type within subjectAltName entry in the DNS
+          server certificate. The DNS server certificate is associated with
+          the ADN to be matched with the certificate given by the DNS server
+          in (D)TLS. To some extent, this approach is similar to certificate
+          usage 1 defined in <xref target="RFC6698"></xref>.</t>
         </list></t>
 
       <t><xref target="fig1"></xref> illustrates a sequence diagram for
@@ -346,7 +354,8 @@
 [Identify the DNS server certificate in EE             |          | 
  certificates to match with the certificate            |          |  
  by the DNS server in (D)TLS handshake]                |          |                                          
-        |                                              |          |                                         
+                                                       |          |
+[Configure ADN and associate DNS server certificate]   |          | 
         |                                              |          |                                         
 ]]></artwork>
         </figure></t>
@@ -393,6 +402,12 @@
               provisioned to the DNS server. The SRV-ID identifier type within
               subjectAltName entry MUST be used to identify the DNS server
               certificate.</t>
+
+              <t>The endpoint configures the ADN for the DNS server from the
+              DNS-ID identifier type within subjectAltName entry in the DNS
+              server certificate. The DNS server certificate is associated
+              with the ADN to be matched with the certificate given by the DNS
+              server in (D)TLS.</t>
             </list></t>
         </list></t>
     </section>
@@ -408,17 +423,13 @@
       protocols by using the following discovery mechanism:</t>
 
       <t><list style="symbols">
-          <t>The DNS client retrieves the authentication domain name for the
-          DNS server from the DNS-ID identifier type within subjectAltName
-          entry in the DNS server certificate.</t>
-
-          <t>The DNS client then makes an S-NAPTR <xref
-          target="RFC3958"></xref> lookup with the authentication domain name
-          and the 'DPRIVE' application service tag to learn the protocols
-          DNS-over-TLS, DNS-over-DTLS, and DNS-over-HTTPS supported by the DNS
-          server and the DNS privacy protocol preferred by the DNS server
-          administrators. The S-NAPTR lookup is performed using an recursive
-          DNS resolver discovered from an untrusted source (such as DHCP).</t>
+          <t>The DNS client makes an S-NAPTR <xref target="RFC3958"></xref>
+          lookup with the authentication domain name and the 'DPRIVE'
+          application service tag to learn the protocols DNS-over-TLS,
+          DNS-over-DTLS, and DNS-over-HTTPS supported by the DNS server and
+          the DNS privacy protocol preferred by the DNS server administrators.
+          The S-NAPTR lookup is performed using an recursive DNS resolver
+          discovered from an untrusted source (such as DHCP).</t>
 
           <t>In the example depicted in <xref
           target="fig-naptr-lookup"></xref>, for authentication domain name
@@ -515,26 +526,36 @@
     </section>
 
     <section anchor="reattach" title="Network Reattachment">
-      <t>On subsequent attachments to the network, if the DNS server
-      certificate is revoked or expired, the endpoint discovers and initiates
-      TLS handshake with the EST server, and uses the validation techniques
-      described in <xref target="RFC6125"></xref> to compare the reference
-      identifier (created in Step 2 of <xref
-      target="bootstrap-endpoint"></xref> in this document) to the EST server
-      certificate and verifies the entire certification path as per <xref
-      target="RFC5280"></xref>. The endpoint then performs Step 4 of <xref
-      target="bootstrap-endpoint"></xref> to get the DNS server certificate
-      from the EST server, discovers the privacy-enabling DNS server,
-      initiates (D)TLS handshake with the DNS server and follows the mechanism
-      discussed in <xref target="auth"></xref> to validate the DNS server
-      certificate.</t>
+      <t>On subsequent attachments to the network, the endpoint discovers the
+      privacy-enabling DNS server using the authentication domain name
+      (configured in Step 5 of <xref target="bootstrap-endpoint"></xref> or
+      <xref target="bootstrap-iot"></xref>), initiates (D)TLS handshake with
+      the DNS server and follows the mechanism discussed in <xref
+      target="auth"></xref> to validate the DNS server certificate.</t>
+
+      <t>If the DNS server certificate is changed or invalid (e.g., revoked or
+      expired) or the procedure to discover the privacy-enabling DNS server
+      fails, the endpoint discovers and initiates TLS handshake with the EST
+      server, and uses the validation techniques described in <xref
+      target="RFC6125"></xref> to compare the reference identifier (created in
+      Step 2 of <xref target="bootstrap-endpoint"></xref> in this document) to
+      the EST server certificate and verifies the entire certification path as
+      per <xref target="RFC5280"></xref>. The endpoint then gets the DNS
+      server certificate from the EST server. If the DNS-ID identifier type
+      within subjectAltName entry in the DNS server certificate does not match
+      the configured ADN, the ADN is replaced with the DNS-ID identifier type.
+      The DNS server certificate associated with the ADN is replaced with the
+      one provided by the EST server. If the ADN has changed, the endpoint
+      discovers the privacy-enabling DNS server, initiates (D)TLS handshake
+      with the DNS server and follows the mechanism discussed in <xref
+      target="auth"></xref> to validate the DNS server certificate. </t>
 
       <t><xref target="fig2"></xref> illustrates a sequence diagram for
-      bootstrapping an endpoint with the local network's DNS server
-      certificate on subsequent attachments to the network.</t>
+      re-configuring an endpoint with ADN and local network's DNS server
+      certificate on subsequent attachments to the network. </t>
 
       <t><figure anchor="fig2"
-          title="Bootstrapping Endpoint Devices on subsequent attachments to the network.">
+          title="Bootstrapping Endpoint Devices on subsequent attachments to the network">
           <artwork align="left"><![CDATA[+----------+                                     +--------+  +--------+                               
 | Endpoint |                                     |  EST   |  |  DNS   |   
 |          |                                     | Server |  | Server |                     
@@ -556,7 +577,8 @@
 [Identify the DNS server certificate in EE             |          | 
  certificates to match with the certificate            |          |  
  by the DNS server in (D)TLS handshake]                |          |                                          
-        |                                              |          |                                         
+                                                       |          |
+[Re-configure ADN and associate DNS server certificate]|          | 
         |                                              |          |
 
 ]]></artwork>
@@ -882,6 +904,8 @@
       <?rfc include="reference.RFC.7626"?>
 
       <?rfc include='reference.RFC.8520'?>
+
+      <?rfc include='reference.RFC.6698'?>
 
       <?rfc include='reference.I-D.camwinget-tls-use-cases'?>
 
