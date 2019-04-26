@@ -38,7 +38,7 @@
     </author>
 
     <author fullname="Dan Wing" initials="D." surname="Wing">
-      <organization>Citrix</organization>
+      <organization abbrev="Citrix">Citrix Systems, Inc.</organization>
 
       <address>
         <postal>
@@ -47,7 +47,7 @@
           <country>USA</country>
         </postal>
 
-        <email>dan@danwing.org</email>
+        <email>dwing-ietf@fuggles.com</email>
       </address>
     </author>
 
