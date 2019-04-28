@@ -573,29 +573,29 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    handshake with the DNS server and follows the mechanism discussed in
    Section 7 to validate the DNS server certificate.
 
-   If the DNS server certificate is changed or invalid (e.g., revoked or
-   expired) or the procedure to discover the privacy-enabling DNS server
-   fails, the endpoint discovers and initiates TLS handshake with the
-   EST server, and uses the validation techniques described in [RFC6125]
-   to compare the reference identifier (created in Step 2 of Section 4
-   in this document) to the EST server certificate and verifies the
-   entire certification path as per [RFC5280].  The endpoint then gets
-   the DNS server certificate from the EST server.  If the DNS-ID
-   identifier type within subjectAltName entry in the DNS server
-   certificate does not match the configured ADN, the ADN is replaced
-   with the DNS-ID identifier type.  The DNS server certificate
-   associated with the ADN is replaced with the one provided by the EST
-   server.  If the ADN has changed, the endpoint discovers the privacy-
-   enabling DNS server, initiates (D)TLS handshake with the DNS server
-   and follows the mechanism discussed in Section 7 to validate the DNS
-   server certificate.
+   If the DNS server certificate invalid (e.g., revoked or expired) or
+   the procedure to discover the privacy-enabling DNS server fails (e.g.
+   the domain name of the privacy-enabling DNS server has changed
+   because the Enterprise network has switched to a public privacy-
+   enabling DNS server capable of blocking access to malicious domains),
+   the endpoint discovers and initiates TLS handshake with the EST
+   server, and uses the validation techniques described in [RFC6125] to
+   compare the reference identifier (created in Step 2 of Section 4 in
+   this document) to the EST server certificate and verifies the entire
+   certification path as per [RFC5280].  The endpoint then gets the DNS
+   server certificate from the EST server.  If the DNS-ID identifier
+   type within subjectAltName entry in the DNS server certificate does
+   not match the configured ADN, the ADN is replaced with the DNS-ID
+   identifier type.  The DNS server certificate associated with the ADN
+   is replaced with the one provided by the EST server.  If the ADN has
+   changed, the endpoint discovers the privacy-enabling DNS server,
+   initiates (D)TLS handshake with the DNS server and follows the
+   mechanism discussed in Section 7 to validate the DNS server
+   certificate.
 
    Figure 3 illustrates a sequence diagram for re-configuring an
    endpoint with ADN and local network's DNS server certificate on
    subsequent attachments to the network.
-
-
-
 
 
 
