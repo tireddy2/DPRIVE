@@ -127,11 +127,11 @@ Internet-Draft          DoT/DoH server discovery              April 2019
    If public DNS servers are used instead of using local DNS servers,
    the following discusses the impact on network-based security:
 
-   o  Various network security services are provided by Enterprise,
-      secure home and wall-gardened networks to protect endpoints (e.g,.
-      Hosts, IoT devices).  [I-D.camwinget-tls-use-cases] discusses some
-      of the network-based security service use cases.  These network
-      security services act on DNS requests originating from endpoints.
+   o  Various network security services are provided by Enterprise
+      networks to protect endpoints (e.g,. Hosts, IoT devices).
+      [I-D.camwinget-tls-use-cases] discusses some of the network-based
+      security service use cases.  These network security services act
+      on DNS requests originating from endpoints.
 
    o  However, if an endpoint is configured to use public DNS-
       over-(D)TLS or DNS-over-HTTPS servers, network security services
@@ -346,11 +346,11 @@ Internet-Draft          DoT/DoH server discovery              April 2019
  |          |                                     | Server |  | Server |
  +----------+                                     +--------+  +--------+
          | DNS-SD query to discover the EST server      |          |
-         |<------------------------------------------------------->|
+         |-------------------------------------------------------->|
          |                                              |          |
          | optional: mDNS query to                      |          |
          |  discover the EST server                     |          |
-         |<---------------------------------------------|          |
+         |--------------------------------------------->|          |
          |                                              |          |
          | Establish provisional TLS connection         |          |
          |<-------------------------------------------->|          |
@@ -363,7 +363,7 @@ Internet-Draft          DoT/DoH server discovery              April 2019
   in subsequent TLS connections]                        |          |
          |                                              |          |
          |      Get EE certificates                     |          |
-         |<-------------------------------------------->|          |
+         |--------------------------------------------->|          |
          |                                              |          |
  [Identify the DNS server certificate in EE             |          |
   certificates to match with the certificate            |          |
@@ -623,11 +623,11 @@ Internet-Draft          DoT/DoH server discovery              April 2019
  |          |                                     | Server |  | Server |
  +----------+                                     +--------+  +--------+
          | DNS-SD query to discover the EST server      |          |
-         |<------------------------------------------------------->|
+         |-------------------------------------------------------->|
          |                                              |          |
          | optional: mDNS query to                      |          |
          | discover the EST server                      |          |
-         |<---------------------------------------------|          |
+         |--------------------------------------------->|          |
          |                                              |          |
          | Establish TLS connection                     |          |
          | and validate EST server certificate          |          |
@@ -1107,10 +1107,10 @@ Authors' Addresses
 
 
    Dan Wing
-   Citrix
+   Citrix Systems, Inc.
    USA
 
-   Email: dan@danwing.org
+   Email: dwing-ietf@fuggles.com
 
 
 

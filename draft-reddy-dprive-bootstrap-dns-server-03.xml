@@ -38,7 +38,7 @@
     </author>
 
     <author fullname="Dan Wing" initials="D." surname="Wing">
-      <organization>Citrix</organization>
+      <organization abbrev="Citrix">Citrix Systems, Inc.</organization>
 
       <address>
         <postal>
@@ -47,7 +47,7 @@
           <country>USA</country>
         </postal>
 
-        <email>dan@danwing.org</email>
+        <email>dwing-ietf@fuggles.com</email>
       </address>
     </author>
 
@@ -129,9 +129,8 @@
       the following discusses the impact on network-based security:</t>
 
       <t><list style="symbols">
-          <t>Various network security services are provided by Enterprise,
-          secure home and wall-gardened networks to protect endpoints (e.g,.
-          Hosts, IoT devices). <xref
+          <t>Various network security services are provided by Enterprise
+          networks to protect endpoints (e.g,. Hosts, IoT devices). <xref
           target="I-D.camwinget-tls-use-cases"></xref> discusses some of the
           network-based security service use cases. These network security
           services act on DNS requests originating from endpoints.</t>
@@ -332,11 +331,11 @@
 |          |                                     | Server |  | Server |                     
 +----------+                                     +--------+  +--------+                               
         | DNS-SD query to discover the EST server      |          |                                         
-        |<------------------------------------------------------->|                                         
+        |-------------------------------------------------------->|                                         
         |                                              |          |
         | optional: mDNS query to                      |          |
         |  discover the EST server                     |          |
-        |<---------------------------------------------|          | 
+        |--------------------------------------------->|          | 
         |                                              |          |                                         
         | Establish provisional TLS connection         |          |                                         
         |<-------------------------------------------->|          |                                         
@@ -349,7 +348,7 @@
  in subsequent TLS connections]                        |          |                           
         |                                              |          |                                         
         |      Get EE certificates                     |          |                                         
-        |<-------------------------------------------->|          |                                         
+        |--------------------------------------------->|          |                                         
         |                                              |          |                                         
 [Identify the DNS server certificate in EE             |          | 
  certificates to match with the certificate            |          |  
@@ -564,11 +563,11 @@
 |          |                                     | Server |  | Server |                     
 +----------+                                     +--------+  +--------+                               
         | DNS-SD query to discover the EST server      |          |                                         
-        |<------------------------------------------------------->|                                         
+        |-------------------------------------------------------->|                                         
         |                                              |          |
         | optional: mDNS query to                      |          |
         | discover the EST server                      |          |
-        |<---------------------------------------------|          | 
+        |--------------------------------------------->|          | 
         |                                              |          |                                         
         | Establish TLS connection                     |          | 
         | and validate EST server certificate          |          |
