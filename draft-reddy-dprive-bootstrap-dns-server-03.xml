@@ -317,7 +317,7 @@
           server certificate. The DNS server certificate is associated with
           the ADN to be matched with the certificate given by the DNS server
           in (D)TLS. To some extent, this approach is similar to certificate
-          usage 1 defined in <xref target="RFC6698"></xref>.</t>
+          usage PKIX-EE(1) defined in <xref target="RFC7671"></xref>.</t>
         </list></t>
 
       <t><xref target="fig1"></xref> illustrates a sequence diagram for
@@ -907,7 +907,7 @@
 
       <?rfc include='reference.RFC.8520'?>
 
-      <?rfc include='reference.RFC.6698'?>
+      <?rfc include='reference.RFC.7671'?>
 
       <?rfc include='reference.I-D.camwinget-tls-use-cases'?>
 
