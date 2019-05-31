@@ -790,19 +790,19 @@ Internet-Draft          DoT/DoH server discovery                May 2019
              -- (e.g. to detect malicious domains) }
 
    LoggingDuration ::=  SEQUENCE {
-        all            INTEGER OPTIONAL,
-                       -- Number of Hours the logged
-                       -- transcation data is stored
-        clientip       INTEGER OPTIONAL,
-        useridentity   INTEGER OPTIONAL,
-        notifyuser     INTEGER OPTIONAL,
-        knownmalware   INTEGER OPTIONAL,
-        analytics      INTEGER OPTIONAL }
+        all          [0]   INTEGER OPTIONAL,
+                          -- Number of Hours the
+                          -- transcation data is stored
+        clientip     [1]  INTEGER OPTIONAL,
+        useridentity [2]  INTEGER OPTIONAL,
+        notifyuser   [3]  INTEGER OPTIONAL,
+        knownmalware [4]  INTEGER OPTIONAL,
+        analytics    [5]  INTEGER OPTIONAL }
 
    Logging ::=  SEQUENCE  {
      loggingTypes         LoggingTypes DEFAULT {none},
      loggingDuration      LoggingDuration OPTIONAL
-                          -- Logged transaction data is cleared
+                          -- Transaction data is cleared
                           -- after logging duration.
                           -- negative one (-1) indicates indefinite
                           -- duration  }
