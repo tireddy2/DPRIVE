@@ -179,7 +179,7 @@
           target="RFC8520"></xref>).</t>
         </list></t>
 
-      <t>If the network security service sucessfully blocks DNS-over-(D)TLS
+      <t>If the network security service successfully blocks DNS-over-(D)TLS
       and DNS-over-HTTPS traffic, this can still compromise the endpoint
       security and privacy; some of the potential security threats are listed
       below:<list style="symbols">
@@ -621,15 +621,29 @@
         <t>A non-null privacy always includes a base privacy. The privacy
         extension includes the following information:<list style="symbols">
             <t>If the client IP address is Personally Identifiable Information
-            (PII) data or non PII-data.</t>
+            (PII) data or non PII-data. If the client IP address is logged or
+            not, and if client IP address is indeed logged, the period for
+            which the client IP address is logged. Logging duration is
+            represented in hours. A negative one (-1) of logging duration
+            indicates indefinite duration. </t>
 
-            <t>If the client IP address is logged or not, and if client IP
-            address is indeed logged, it is stored in temporary or permanant
-            logs.</t>
+            <t>If the user identity is logged or not, and if user identity
+            address is indeed logged, the period for which the user identity
+            is logged. </t>
 
-            <t>If the server clears the stored transaction data (e.g., DNS
-            messages) or not, and if the server clears the stored transaction
-            data, the period for which the transaction data is stored.</t>
+            <t>If the transaction data (e.g., DNS messages) is logged or not,
+            and if transaction data is logged, the period for which the
+            transaction data is stored. </t>
+
+            <t>If the transaction data is logged to notify the user access to
+            certain domains (e.g., malicious domains) is blocked, the period
+            for which the transaction data is stored. If access to malicious
+            domains is logged, the period for which the transaction data is
+            stored. </t>
+
+            <t>If the transaction data is logged for analytics (e.g. to detect
+            malicious domains), the period for which the transaction data is
+            stored. </t>
 
             <t>If the transaction data is shared with partners or not, and if
             the transaction data is shared with partners, the names of the
@@ -664,29 +678,50 @@
      aURL         [1]  AuditURL OPTIONAL  }
 
   PrivacyInfo  ::=  SEQUENCE  {
-     ipaddresspii      BOOLEAN,  
-                       -- TRUE means client IP address is PII
-     log          [0]  Logging, 
-     retention    [1]  DataRetention,
-     sdata        [2]  ShareData,
-     transferdata [3]  BOOLEAN,  
-                       -- TRUE means share or sell data to third parties
-     blockdomains [4]  BOOLEAN   
-                       -- TRUE means domains will be blocked  }
+    ipaddresspii      BOOLEAN,  
+                      -- TRUE means client IP address is PII
+    log          [0]  Logging, 
+    sdata        [2]  ShareData,
+    transferdata [3]  BOOLEAN,  
+                      -- TRUE means share or sell data to third parties
+    blockdomains [4]  BOOLEAN   
+                      -- TRUE means domains will be blocked  }
+
+   LoggingTypes  ::=  BIT STRING {
+     none           (0), 
+             -- No logging
+     all            (1),
+             -- Log all transaction data 
+     clientip       (2), 
+             -- Log client IP address
+     useridentity   (3),
+             -- Log user identity  
+     notifyuser     (4),
+             -- Log to notify user access 
+             -- to certain domains is blocked
+     knownmalware   (5),
+             -- Log access to malicious domains
+     analytics      (6)  
+             -- Log transaction data for analytics 
+             -- (e.g. to detect malicious domains) }
+    
+   LoggingDuration ::=  SEQUENCE {
+        all            INTEGER OPTIONAL,
+                       -- Number of Hours the logged 
+                       -- transcation data is stored
+        clientip       INTEGER OPTIONAL,
+        useridentity   INTEGER OPTIONAL, 
+        notifyuser     INTEGER OPTIONAL,
+        knownmalware   INTEGER OPTIONAL,
+        analytics      INTEGER OPTIONAL }
 
    Logging ::=  SEQUENCE  {
-     logip                BOOLEAN, 
-                          -- TRUE means client IP address logging
-     temporary            BOOLEAN  OPTIONAL 
-                          -- TRUE means temporary logs  }
-
-   DataRetention ::=  SEQUENCE  {
-     cleardata            BOOLEAN, 
-                          -- TRUE means the server clears 
-                          -- the stored transaction data 
-     period               INTEGER OPTIONAL 
-                          -- Number of Hours the 
-                          -- transaction data is stored  }
+     loggingTypes         LoggingTypes DEFAULT {none},
+     loggingDuration      LoggingDuration OPTIONAL   
+                          -- Logged transaction data is cleared 
+                          -- after logging duration.
+                          -- negative one (-1) indicates indefinite 
+                          -- duration  }
 
    ShareData ::=  SEQUENCE  {
      sharepartners        BOOLEAN, 
@@ -844,8 +879,8 @@
 
     <section anchor="acknowledgments" title="Acknowledgments">
       <t>Thanks to Joe Hildebrand, Harsha Joshi, Shashank Jain, Patrick
-      McManus, Bob Harold, Eliot Lear and Sara Dickinson for the discussion
-      and comments.</t>
+      McManus, Bob Harold, Livingood Jason, Eliot Lear and Sara Dickinson for
+      the discussion and comments.</t>
     </section>
   </middle>
 

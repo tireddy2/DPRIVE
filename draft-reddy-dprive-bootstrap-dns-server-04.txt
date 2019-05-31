@@ -78,19 +78,19 @@ Table of Contents
    9.  Network Reattachment  . . . . . . . . . . . . . . . . . . . .  11
    10. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  12
      10.1.  Privacy Extension Format . . . . . . . . . . . . . . . .  12
-     10.2.  Privacy Extension Syntax . . . . . . . . . . . . . . . .  13
+     10.2.  Privacy Extension Syntax . . . . . . . . . . . . . . . .  14
    11. Security Considerations . . . . . . . . . . . . . . . . . . .  15
-   12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  15
+   12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  16
      12.1.  Application Service & Application Protocol Tags  . . . .  16
-       12.1.1.  DNS Application Service Tag Registration . . . . . .  16
-       12.1.2.  dns.tls Application Protocol Tag Registration  . . .  16
-       12.1.3.  dns.dtls Application Protocol Tag Registration . . .  16
+       12.1.1.  DNS Application Service Tag Registration . . . . . .  17
+       12.1.2.  dns.tls Application Protocol Tag Registration  . . .  17
+       12.1.3.  dns.dtls Application Protocol Tag Registration . . .  17
        12.1.4.  dns.https Application Protocol Tag Registration  . .  17
    13. Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .  17
-   14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  17
-     14.1.  Normative References . . . . . . . . . . . . . . . . . .  17
+   14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  18
+     14.1.  Normative References . . . . . . . . . . . . . . . . . .  18
      14.2.  Informative References . . . . . . . . . . . . . . . . .  19
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  20
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  21
 
 1.  Introduction
 
@@ -179,7 +179,7 @@ Internet-Draft          DoT/DoH server discovery                May 2019
       network Access Control List (ACL) rules based on domain names
       (Section 8 of [RFC8520]).
 
-   If the network security service sucessfully blocks DNS-over-(D)TLS
+   If the network security service successfully blocks DNS-over-(D)TLS
    and DNS-over-HTTPS traffic, this can still compromise the endpoint
    security and privacy; some of the potential security threats are
    listed below:
@@ -692,15 +692,29 @@ Internet-Draft          DoT/DoH server discovery                May 2019
    extension includes the following information:
 
    o  If the client IP address is Personally Identifiable Information
-      (PII) data or non PII-data.
+      (PII) data or non PII-data.  If the client IP address is logged or
+      not, and if client IP address is indeed logged, the period for
+      which the client IP address is logged.  Logging duration is
+      represented in hours.  A negative one (-1) of logging duration
+      indicates indefinite duration.
 
-   o  If the client IP address is logged or not, and if client IP
-      address is indeed logged, it is stored in temporary or permanant
-      logs.
+   o  If the user identity is logged or not, and if user identity
+      address is indeed logged, the period for which the user identity
+      is logged.
 
-   o  If the server clears the stored transaction data (e.g., DNS
-      messages) or not, and if the server clears the stored transaction
-      data, the period for which the transaction data is stored.
+   o  If the transaction data (e.g., DNS messages) is logged or not, and
+      if transaction data is logged, the period for which the
+      transaction data is stored.
+
+   o  If the transaction data is logged to notify the user access to
+      certain domains (e.g., malicious domains) is blocked, the period
+      for which the transaction data is stored.  If access to malicious
+      domains is logged, the period for which the transaction data is
+      stored.
+
+   o  If the transaction data is logged for analytics (e.g. to detect
+      malicious domains), the period for which the transaction data is
+      stored.
 
    o  If the transaction data is shared with partners or not, and if the
       transaction data is shared with partners, the names of the
@@ -708,6 +722,13 @@ Internet-Draft          DoT/DoH server discovery                May 2019
       shared with partners.
 
    o  If the transaction data is shared or sold to third parties.
+
+
+
+Reddy, et al.           Expires November 8, 2019               [Page 13]
+
+Internet-Draft          DoT/DoH server discovery                May 2019
+
 
    o  If the DNS server will block DNS resolution of certain domains
       (e.g., malicious domains).
@@ -719,16 +740,6 @@ Internet-Draft          DoT/DoH server discovery                May 2019
 10.2.  Privacy Extension Syntax
 
    The syntax for the privacy extension is as follows:
-
-
-
-
-
-
-Reddy, et al.           Expires November 8, 2019               [Page 13]
-
-Internet-Draft          DoT/DoH server discovery                May 2019
-
 
    Privacy ::=  CHOICE  {
      none                 NULL,
@@ -743,29 +754,58 @@ Internet-Draft          DoT/DoH server discovery                May 2019
      aURL         [1]  AuditURL OPTIONAL  }
 
   PrivacyInfo  ::=  SEQUENCE  {
-     ipaddresspii      BOOLEAN,
-                       -- TRUE means client IP address is PII
-     log          [0]  Logging,
-     retention    [1]  DataRetention,
-     sdata        [2]  ShareData,
-     transferdata [3]  BOOLEAN,
-                       -- TRUE means share or sell data to third parties
-     blockdomains [4]  BOOLEAN
-                       -- TRUE means domains will be blocked  }
+    ipaddresspii      BOOLEAN,
+                      -- TRUE means client IP address is PII
+    log          [0]  Logging,
+    sdata        [2]  ShareData,
+    transferdata [3]  BOOLEAN,
+                      -- TRUE means share or sell data to third parties
+    blockdomains [4]  BOOLEAN
+                      -- TRUE means domains will be blocked  }
+
+   LoggingTypes  ::=  BIT STRING {
+     none           (0),
+             -- No logging
+     all            (1),
+             -- Log all transaction data
+     clientip       (2),
+             -- Log client IP address
+     useridentity   (3),
+             -- Log user identity
+     notifyuser     (4),
+             -- Log to notify user access
+             -- to certain domains is blocked
+     knownmalware   (5),
+             -- Log access to malicious domains
+     analytics      (6)
+
+
+
+Reddy, et al.           Expires November 8, 2019               [Page 14]
+
+Internet-Draft          DoT/DoH server discovery                May 2019
+
+
+             -- Log transaction data for analytics
+             -- (e.g. to detect malicious domains) }
+
+   LoggingDuration ::=  SEQUENCE {
+        all            INTEGER OPTIONAL,
+                       -- Number of Hours the logged
+                       -- transcation data is stored
+        clientip       INTEGER OPTIONAL,
+        useridentity   INTEGER OPTIONAL,
+        notifyuser     INTEGER OPTIONAL,
+        knownmalware   INTEGER OPTIONAL,
+        analytics      INTEGER OPTIONAL }
 
    Logging ::=  SEQUENCE  {
-     logip                BOOLEAN,
-                          -- TRUE means client IP address logging
-     temporary            BOOLEAN  OPTIONAL
-                          -- TRUE means temporary logs  }
-
-   DataRetention ::=  SEQUENCE  {
-     cleardata            BOOLEAN,
-                          -- TRUE means the server clears
-                          -- the stored transaction data
-     period               INTEGER OPTIONAL
-                          -- Number of Hours the
-                          -- transaction data is stored  }
+     loggingTypes         LoggingTypes DEFAULT {none},
+     loggingDuration      LoggingDuration OPTIONAL
+                          -- Logged transaction data is cleared
+                          -- after logging duration.
+                          -- negative one (-1) indicates indefinite
+                          -- duration  }
 
    ShareData ::=  SEQUENCE  {
      sharepartners        BOOLEAN,
@@ -778,13 +818,6 @@ Internet-Draft          DoT/DoH server discovery                May 2019
 
    PrivacyURL  ::=  IA5String  -- MUST use https scheme
    AuditURL    ::=  IA5String  -- MUST use https scheme
-
-
-
-Reddy, et al.           Expires November 8, 2019               [Page 14]
-
-Internet-Draft          DoT/DoH server discovery                May 2019
-
 
 11.  Security Considerations
 
@@ -801,6 +834,13 @@ Internet-Draft          DoT/DoH server discovery                May 2019
    network, similar to the way users disable VPN connection in specific
    network (e.g., Enterprise network) and enable VPN connection by
    default in other networks.
+
+
+
+Reddy, et al.           Expires November 8, 2019               [Page 15]
+
+Internet-Draft          DoT/DoH server discovery                May 2019
+
 
    If an endpoint has enabled strict privacy profile, and the network
    security service blocks the traffic to the privacy-enabling public
@@ -832,16 +872,6 @@ Internet-Draft          DoT/DoH server discovery                May 2019
    IANA is requested to add the following entry in the "SMI Security for
    PKIX Certificate Extension" (1.3.6.1.5.5.7.1) registry:
 
-
-
-
-
-
-Reddy, et al.           Expires November 8, 2019               [Page 15]
-
-Internet-Draft          DoT/DoH server discovery                May 2019
-
-
       Decimal  Description                     References
       -------  ------------------------------  ---------------------
 
@@ -860,6 +890,13 @@ Internet-Draft          DoT/DoH server discovery                May 2019
    This document requests IANA to make the following allocations from
    the registry available at: https://www.iana.org/assignments/s-naptr-
    parameters/s-naptr-parameters.xhtml.
+
+
+
+Reddy, et al.           Expires November 8, 2019               [Page 16]
+
+Internet-Draft          DoT/DoH server discovery                May 2019
+
 
 12.1.1.  DNS Application Service Tag Registration
 
@@ -891,13 +928,6 @@ Internet-Draft          DoT/DoH server discovery                May 2019
 
    o  Contact Information: <one of the authors>
 
-
-
-Reddy, et al.           Expires November 8, 2019               [Page 16]
-
-Internet-Draft          DoT/DoH server discovery                May 2019
-
-
 12.1.4.  dns.https Application Protocol Tag Registration
 
    o  Application Protocol Tag: dnshttps
@@ -911,8 +941,18 @@ Internet-Draft          DoT/DoH server discovery                May 2019
 13.  Acknowledgments
 
    Thanks to Joe Hildebrand, Harsha Joshi, Shashank Jain, Patrick
-   McManus, Bob Harold, Eliot Lear and Sara Dickinson for the discussion
-   and comments.
+   McManus, Bob Harold, Livingood Jason, Eliot Lear and Sara Dickinson
+   for the discussion and comments.
+
+
+
+
+
+
+Reddy, et al.           Expires November 8, 2019               [Page 17]
+
+Internet-Draft          DoT/DoH server discovery                May 2019
+
 
 14.  References
 
@@ -944,16 +984,6 @@ Internet-Draft          DoT/DoH server discovery                May 2019
               (CRL) Profile", RFC 5280, DOI 10.17487/RFC5280, May 2008,
               <https://www.rfc-editor.org/info/rfc5280>.
 
-
-
-
-
-
-Reddy, et al.           Expires November 8, 2019               [Page 17]
-
-Internet-Draft          DoT/DoH server discovery                May 2019
-
-
    [RFC6125]  Saint-Andre, P. and J. Hodges, "Representation and
               Verification of Domain-Based Application Service Identity
               within Internet Public Key Infrastructure Using X.509
@@ -972,6 +1002,13 @@ Internet-Draft          DoT/DoH server discovery                May 2019
    [RFC6763]  Cheshire, S. and M. Krochmal, "DNS-Based Service
               Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
               <https://www.rfc-editor.org/info/rfc6763>.
+
+
+
+Reddy, et al.           Expires November 8, 2019               [Page 18]
+
+Internet-Draft          DoT/DoH server discovery                May 2019
+
 
    [RFC7030]  Pritikin, M., Ed., Yee, P., Ed., and D. Harkins, Ed.,
               "Enrollment over Secure Transport", RFC 7030,
@@ -1002,14 +1039,6 @@ Internet-Draft          DoT/DoH server discovery                May 2019
               Extensions", RFC 8295, DOI 10.17487/RFC8295, January 2018,
               <https://www.rfc-editor.org/info/rfc8295>.
 
-
-
-
-Reddy, et al.           Expires November 8, 2019               [Page 18]
-
-Internet-Draft          DoT/DoH server discovery                May 2019
-
-
    [RFC8446]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
               Version 1.3", RFC 8446, DOI 10.17487/RFC8446, August 2018,
               <https://www.rfc-editor.org/info/rfc8446>.
@@ -1027,6 +1056,15 @@ Internet-Draft          DoT/DoH server discovery                May 2019
    [ASN1-88]  "International Telephone and Telegraph Consultative
               Committee, "Specification of Abstract Syntax Notation One
               (ASN.1)", CCITT Recommendation X.208, 1988.".
+
+
+
+
+
+Reddy, et al.           Expires November 8, 2019               [Page 19]
+
+Internet-Draft          DoT/DoH server discovery                May 2019
+
 
    [CDN]      "End-User Mapping: Next Generation Request Routing for
               Content Delivery", 2015,
@@ -1056,16 +1094,6 @@ Internet-Draft          DoT/DoH server discovery                May 2019
               DOI 10.17487/RFC7626, August 2015,
               <https://www.rfc-editor.org/info/rfc7626>.
 
-
-
-
-
-
-Reddy, et al.           Expires November 8, 2019               [Page 19]
-
-Internet-Draft          DoT/DoH server discovery                May 2019
-
-
    [RFC7671]  Dukhovni, V. and W. Hardaker, "The DNS-Based
               Authentication of Named Entities (DANE) Protocol: Updates
               and Operational Guidance", RFC 7671, DOI 10.17487/RFC7671,
@@ -1085,6 +1113,14 @@ Internet-Draft          DoT/DoH server discovery                May 2019
               T., and Y. Ioku, "Mutual Authentication Protocol for
               HTTP", RFC 8120, DOI 10.17487/RFC8120, April 2017,
               <https://www.rfc-editor.org/info/rfc8120>.
+
+
+
+
+Reddy, et al.           Expires November 8, 2019               [Page 20]
+
+Internet-Draft          DoT/DoH server discovery                May 2019
+
 
    [RFC8310]  Dickinson, S., Gillmor, D., and T. Reddy, "Usage Profiles
               for DNS over TLS and DNS over DTLS", RFC 8310,
@@ -1114,14 +1150,6 @@ Authors' Addresses
    Email: dwing-ietf@fuggles.com
 
 
-
-
-
-Reddy, et al.           Expires November 8, 2019               [Page 20]
-
-Internet-Draft          DoT/DoH server discovery                May 2019
-
-
    Michael C. Richardson
    Sandelman Software Works
    USA
@@ -1135,34 +1163,6 @@ Internet-Draft          DoT/DoH server discovery                May 2019
    France
 
    Email: mohamed.boucadair@orange.com
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
