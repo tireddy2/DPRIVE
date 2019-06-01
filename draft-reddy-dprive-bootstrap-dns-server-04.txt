@@ -692,15 +692,14 @@ Internet-Draft          DoT/DoH server discovery                May 2019
    extension includes the following information:
 
    o  If the client IP address is Personally Identifiable Information
-      (PII) data or non PII-data.  If the client IP address is logged or
-      not, and if client IP address is indeed logged, the period for
-      which the client IP address is logged.  Logging duration is
-      represented in hours.  A negative one (-1) of logging duration
-      indicates indefinite duration.
+      (PII) data or non PII-data.
 
-   o  If the user identity is logged or not, and if user identity
-      address is indeed logged, the period for which the user identity
-      is logged.
+   o  If the user identity that sent the DNS query is logged or not, and
+      if user identity address is indeed logged, the period for which
+      the user identity is logged.  User identity such as username, IP
+      address, MAC address or personally identifiable data.  Logging
+      duration is represented in hours.  A negative one (-1) of logging
+      duration indicates indefinite duration.
 
    o  If the transaction data (e.g., DNS messages) is logged or not, and
       if transaction data is logged, the period for which the
@@ -710,11 +709,9 @@ Internet-Draft          DoT/DoH server discovery                May 2019
       certain domains (e.g., malicious domains) is blocked, the period
       for which the transaction data is stored.  If access to malicious
       domains is logged, the period for which the transaction data is
-      stored.
-
-   o  If the transaction data is logged for analytics (e.g. to detect
-      malicious domains), the period for which the transaction data is
-      stored.
+      stored.  If the transaction data is logged for analytics (e.g. to
+      detect malicious domains), the period for which the transaction
+      data is stored.
 
    o  If the transaction data is shared with partners or not, and if the
       transaction data is shared with partners, the names of the
@@ -723,15 +720,15 @@ Internet-Draft          DoT/DoH server discovery                May 2019
 
    o  If the transaction data is shared or sold to third parties.
 
+   o  If the DNS server will block DNS resolution of certain domains
+      (e.g., malicious domains).
+
 
 
 Reddy, et al.           Expires November 8, 2019               [Page 13]
 
 Internet-Draft          DoT/DoH server discovery                May 2019
 
-
-   o  If the DNS server will block DNS resolution of certain domains
-      (e.g., malicious domains).
 
    o  A URL that points to the privacy preserving data policy, and a URL
       that points to the security assessment report of the DNS server by
@@ -768,16 +765,19 @@ Internet-Draft          DoT/DoH server discovery                May 2019
              -- No logging
      all            (1),
              -- Log all transaction data
-     clientip       (2),
-             -- Log client IP address
-     useridentity   (3),
-             -- Log user identity
-     notifyuser     (4),
+     useridentity   (2),
+             -- Log user identity (e.g., username, IP address)
+     notifyuser     (3),
              -- Log to notify user access
              -- to certain domains is blocked
-     knownmalware   (5),
+     knownmalware   (4),
              -- Log access to malicious domains
-     analytics      (6)
+     analytics      (5)
+             -- Log transaction data for analytics
+             -- (e.g. to detect malicious domains) }
+
+   LoggingDuration ::=  SEQUENCE {
+        all          [0]   INTEGER OPTIONAL,
 
 
 
@@ -786,25 +786,19 @@ Reddy, et al.           Expires November 8, 2019               [Page 14]
 Internet-Draft          DoT/DoH server discovery                May 2019
 
 
-             -- Log transaction data for analytics
-             -- (e.g. to detect malicious domains) }
-
-   LoggingDuration ::=  SEQUENCE {
-        all          [0]   INTEGER OPTIONAL,
                           -- Number of Hours the
                           -- transcation data is stored
-        clientip     [1]  INTEGER OPTIONAL,
-        useridentity [2]  INTEGER OPTIONAL,
-        notifyuser   [3]  INTEGER OPTIONAL,
-        knownmalware [4]  INTEGER OPTIONAL,
-        analytics    [5]  INTEGER OPTIONAL }
+        useridentity [1]  INTEGER OPTIONAL,
+        notifyuser   [2]  INTEGER OPTIONAL,
+        knownmalware [3]  INTEGER OPTIONAL,
+        analytics    [4]  INTEGER OPTIONAL }
 
    Logging ::=  SEQUENCE  {
      loggingTypes         LoggingTypes DEFAULT {none},
      loggingDuration      LoggingDuration OPTIONAL
                           -- Transaction data is cleared
-                          -- after logging duration.
-                          -- negative one (-1) indicates indefinite
+                          -- after logging duration,
+                          -- Negative one (-1) indicates indefinite
                           -- duration  }
 
    ShareData ::=  SEQUENCE  {
@@ -835,6 +829,12 @@ Internet-Draft          DoT/DoH server discovery                May 2019
    network (e.g., Enterprise network) and enable VPN connection by
    default in other networks.
 
+   If an endpoint has enabled strict privacy profile, and the network
+   security service blocks the traffic to the privacy-enabling public
+   DNS server, a hard failure occurs and the user is notified.  The user
+   has a choice to switch to another network or if the user trusts the
+   network, the user can enable strict privacy profile with the DNS-
+
 
 
 Reddy, et al.           Expires November 8, 2019               [Page 15]
@@ -842,11 +842,6 @@ Reddy, et al.           Expires November 8, 2019               [Page 15]
 Internet-Draft          DoT/DoH server discovery                May 2019
 
 
-   If an endpoint has enabled strict privacy profile, and the network
-   security service blocks the traffic to the privacy-enabling public
-   DNS server, a hard failure occurs and the user is notified.  The user
-   has a choice to switch to another network or if the user trusts the
-   network, the user can enable strict privacy profile with the DNS-
    over-(D)TLS or DNS-over-HTTPS server discovered in the network
    instead of downgrading to opportunistic privacy profile.
 
@@ -890,6 +885,11 @@ Internet-Draft          DoT/DoH server discovery                May 2019
    This document requests IANA to make the following allocations from
    the registry available at: https://www.iana.org/assignments/s-naptr-
    parameters/s-naptr-parameters.xhtml.
+
+
+
+
+
 
 
 

@@ -621,15 +621,14 @@
         <t>A non-null privacy always includes a base privacy. The privacy
         extension includes the following information:<list style="symbols">
             <t>If the client IP address is Personally Identifiable Information
-            (PII) data or non PII-data. If the client IP address is logged or
-            not, and if client IP address is indeed logged, the period for
-            which the client IP address is logged. Logging duration is
-            represented in hours. A negative one (-1) of logging duration
-            indicates indefinite duration. </t>
+            (PII) data or non PII-data. </t>
 
-            <t>If the user identity is logged or not, and if user identity
-            address is indeed logged, the period for which the user identity
-            is logged. </t>
+            <t>If the user identity that sent the DNS query is logged or not,
+            and if user identity address is indeed logged, the period for
+            which the user identity is logged. User identity such as username,
+            IP address, MAC address or personally identifiable data. Logging
+            duration is represented in hours. A negative one (-1) of logging
+            duration indicates indefinite duration.</t>
 
             <t>If the transaction data (e.g., DNS messages) is logged or not,
             and if transaction data is logged, the period for which the
@@ -639,11 +638,9 @@
             certain domains (e.g., malicious domains) is blocked, the period
             for which the transaction data is stored. If access to malicious
             domains is logged, the period for which the transaction data is
-            stored. </t>
-
-            <t>If the transaction data is logged for analytics (e.g. to detect
-            malicious domains), the period for which the transaction data is
-            stored. </t>
+            stored. If the transaction data is logged for analytics (e.g. to
+            detect malicious domains), the period for which the transaction
+            data is stored.</t>
 
             <t>If the transaction data is shared with partners or not, and if
             the transaction data is shared with partners, the names of the
@@ -692,16 +689,14 @@
              -- No logging
      all            (1),
              -- Log all transaction data 
-     clientip       (2), 
-             -- Log client IP address
-     useridentity   (3),
-             -- Log user identity  
-     notifyuser     (4),
+     useridentity   (2),
+             -- Log user identity (e.g., username, IP address) 
+     notifyuser     (3),
              -- Log to notify user access 
              -- to certain domains is blocked
-     knownmalware   (5),
+     knownmalware   (4),
              -- Log access to malicious domains
-     analytics      (6)  
+     analytics      (5)  
              -- Log transaction data for analytics 
              -- (e.g. to detect malicious domains) }
     
@@ -709,18 +704,17 @@
         all          [0]   INTEGER OPTIONAL,
                           -- Number of Hours the
                           -- transcation data is stored
-        clientip     [1]  INTEGER OPTIONAL,
-        useridentity [2]  INTEGER OPTIONAL, 
-        notifyuser   [3]  INTEGER OPTIONAL,
-        knownmalware [4]  INTEGER OPTIONAL,
-        analytics    [5]  INTEGER OPTIONAL }
+        useridentity [1]  INTEGER OPTIONAL, 
+        notifyuser   [2]  INTEGER OPTIONAL,
+        knownmalware [3]  INTEGER OPTIONAL,
+        analytics    [4]  INTEGER OPTIONAL }
 
    Logging ::=  SEQUENCE  {
      loggingTypes         LoggingTypes DEFAULT {none},
      loggingDuration      LoggingDuration OPTIONAL   
                           -- Transaction data is cleared 
-                          -- after logging duration.
-                          -- negative one (-1) indicates indefinite 
+                          -- after logging duration,
+                          -- Negative one (-1) indicates indefinite 
                           -- duration  }
 
    ShareData ::=  SEQUENCE  {
