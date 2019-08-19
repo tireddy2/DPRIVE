@@ -10,7 +10,7 @@
 <?rfc inline="yes"?>
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
-<rfc category="std" docName="draft-reddy-dprive-bootstrap-dns-server-05"
+<rfc category="std" docName="draft-reddy-dprive-bootstrap-dns-server-latest"
      ipr="trust200902">
   <front>
     <title abbrev="DoT/DoH server discovery">A Bootstrapping Procedure to
