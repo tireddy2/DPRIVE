@@ -10,7 +10,7 @@
 <?rfc inline="yes"?>
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
-<rfc category="std" docName="draft-reddy-dprive-bootstrap-dns-server-03"
+<rfc category="std" docName="draft-reddy-dprive-bootstrap-dns-server-04"
      ipr="trust200902">
   <front>
     <title abbrev="DoT/DoH server discovery">A Bootstrapping Procedure to
@@ -86,7 +86,7 @@
       </address>
     </author>
 
-    <date day="2" month="April" year="2019" />
+    <date day="7" month="May" year="2019" />
 
     <workgroup>DPRIVE WG</workgroup>
 
@@ -179,7 +179,7 @@
           target="RFC8520"></xref>).</t>
         </list></t>
 
-      <t>If the network security service sucessfully blocks DNS-over-(D)TLS
+      <t>If the network security service successfully blocks DNS-over-(D)TLS
       and DNS-over-HTTPS traffic, this can still compromise the endpoint
       security and privacy; some of the potential security threats are listed
       below:<list style="symbols">
@@ -276,7 +276,7 @@
           EST server. <vspace blankLines="1" />As a reminder, PAKE is an
           authentication method that allows the use of usernames and passwords
           over unencrypted channels without revealing the passwords to an
-          eavesdropper. Similarty, the mutual authentication for HTTP is based
+          eavesdropper. Similarly, the mutual authentication for HTTP is based
           on PAKE and provides mutual authentication between an HTTP client
           and an HTTP server using username and password as credentials. The
           cryptographic algorithms to use with the mutual authentication
@@ -291,7 +291,7 @@
           subsequent connections to the EST server, the endpoint MUST validate
           the EST server certificate using the Implict Trust Anchor database
           (i.e, the EST server certificate must pass PKIX certification path
-          validation) and matches the reference identifier against the EST
+          validation) and match the reference identifier against the EST
           server's identity according to the rules specified in Section 6.4 of
           <xref target="RFC6125"></xref>.</t>
 
@@ -511,16 +511,16 @@
       name MUST be "_est._tcp".</t>
 
       <section title="mDNS">
-        <t>A EST client application can proactively discover EST server being
-        advertised in the site by multicasting a PTR query to the
+        <t>A EST client application can proactively discover an EST server
+        being advertised in the site by multicasting a PTR query to the
         following:</t>
 
         <t><list style="symbols">
             <t>"_est._tcp.local"</t>
           </list>A EST server can send out gratuitous multicast DNS answer
         packets whenever it starts up, wakes from sleep, or detects a change
-        in EST server configuration. EST client application receive these
-        gratuitous packets and cache information contained in it.</t>
+        in EST server configuration. EST client application can receive these
+        gratuitous packets and cache information contained in them.</t>
       </section>
     </section>
 
@@ -532,8 +532,8 @@
       the DNS server and follows the mechanism discussed in <xref
       target="auth"></xref> to validate the DNS server certificate.</t>
 
-      <t>If the DNS server certificate invalid (e.g., revoked or expired) or
-      the procedure to discover the privacy-enabling DNS server fails (e.g.
+      <t>If the DNS server certificate is invalid (e.g., revoked or expired)
+      or the procedure to discover the privacy-enabling DNS server fails (e.g.
       the domain name of the privacy-enabling DNS server has changed because
       the Enterprise network has switched to a public privacy-enabling DNS
       server capable of blocking access to malicious domains), the endpoint
@@ -621,15 +621,26 @@
         <t>A non-null privacy always includes a base privacy. The privacy
         extension includes the following information:<list style="symbols">
             <t>If the client IP address is Personally Identifiable Information
-            (PII) data or non PII-data.</t>
+            (PII) data or non PII-data. </t>
 
-            <t>If the client IP address is logged or not, and if client IP
-            address is indeed logged, it is stored in temporary or permanant
-            logs.</t>
+            <t>If the user identity that sent the DNS query is logged or not,
+            and if user identity address is indeed logged, the period for
+            which the user identity is logged. User identity such as username,
+            IP address, MAC address or personally identifiable data. Logging
+            duration is represented in hours. A negative one (-1) of logging
+            duration indicates indefinite duration.</t>
 
-            <t>If the server clears the stored transaction data (e.g., DNS
-            messages) or not, and if the server clears the stored transaction
-            data, the period for which the transaction data is stored.</t>
+            <t>If the transaction data (e.g., DNS messages) is logged or not,
+            and if transaction data is logged, the period for which the
+            transaction data is stored. </t>
+
+            <t>If the transaction data is logged to notify the user access to
+            certain domains (e.g., malicious domains) is blocked, the period
+            for which the transaction data is stored. If access to malicious
+            domains is logged, the period for which the transaction data is
+            stored. If the transaction data is logged for analytics (e.g. to
+            detect malicious domains), the period for which the transaction
+            data is stored.</t>
 
             <t>If the transaction data is shared with partners or not, and if
             the transaction data is shared with partners, the names of the
@@ -664,29 +675,47 @@
      aURL         [1]  AuditURL OPTIONAL  }
 
   PrivacyInfo  ::=  SEQUENCE  {
-     ipaddresspii      BOOLEAN,  
-                       -- TRUE means client IP address is PII
-     log          [0]  Logging, 
-     retention    [1]  DataRetention,
-     sdata        [2]  ShareData,
-     transferdata [3]  BOOLEAN,  
-                       -- TRUE means share or sell data to third parties
-     blockdomains [4]  BOOLEAN   
-                       -- TRUE means domains will be blocked  }
+    ipaddresspii      BOOLEAN,  
+                      -- TRUE means client IP address is PII
+    log          [0]  Logging, 
+    sdata        [2]  ShareData,
+    transferdata [3]  BOOLEAN,  
+                      -- TRUE means share or sell data to third parties
+    blockdomains [4]  BOOLEAN   
+                      -- TRUE means domains will be blocked  }
+
+   LoggingTypes  ::=  BIT STRING {
+     none           (0), 
+             -- No logging
+     all            (1),
+             -- Log all transaction data 
+     useridentity   (2),
+             -- Log user identity (e.g., username, IP address) 
+     notifyuser     (3),
+             -- Log to notify user access 
+             -- to certain domains is blocked
+     knownmalware   (4),
+             -- Log access to malicious domains
+     analytics      (5)  
+             -- Log transaction data for analytics 
+             -- (e.g. to detect malicious domains) }
+    
+   LoggingDuration ::=  SEQUENCE {
+        all          [0]   INTEGER OPTIONAL,
+                          -- Number of Hours the
+                          -- transcation data is stored
+        useridentity [1]  INTEGER OPTIONAL, 
+        notifyuser   [2]  INTEGER OPTIONAL,
+        knownmalware [3]  INTEGER OPTIONAL,
+        analytics    [4]  INTEGER OPTIONAL }
 
    Logging ::=  SEQUENCE  {
-     logip                BOOLEAN, 
-                          -- TRUE means client IP address logging
-     temporary            BOOLEAN  OPTIONAL 
-                          -- TRUE means temporary logs  }
-
-   DataRetention ::=  SEQUENCE  {
-     cleardata            BOOLEAN, 
-                          -- TRUE means the server clears 
-                          -- the stored transaction data 
-     period               INTEGER OPTIONAL 
-                          -- Number of Hours the 
-                          -- transaction data is stored  }
+     loggingTypes         LoggingTypes DEFAULT {none},
+     loggingDuration      LoggingDuration OPTIONAL   
+                          -- Transaction data is cleared 
+                          -- after logging duration,
+                          -- Negative one (-1) indicates indefinite 
+                          -- duration  }
 
    ShareData ::=  SEQUENCE  {
      sharepartners        BOOLEAN, 
@@ -844,8 +873,8 @@
 
     <section anchor="acknowledgments" title="Acknowledgments">
       <t>Thanks to Joe Hildebrand, Harsha Joshi, Shashank Jain, Patrick
-      McManus, Eliot Lear and Sara Dickinson for the discussion and
-      comments.</t>
+      McManus, Bob Harold, Livingood Jason, Eliot Lear and Sara Dickinson for
+      the discussion and comments.</t>
     </section>
   </middle>
 
