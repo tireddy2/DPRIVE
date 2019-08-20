@@ -10,7 +10,7 @@
 <?rfc inline="yes"?>
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
-<rfc category="std" docName="draft-reddy-dprive-bootstrap-dns-server-latest"
+<rfc category="std" docName="draft-reddy-dprive-bootstrap-dns-server-05"
      ipr="trust200902">
   <front>
     <title abbrev="DoT/DoH server discovery">A Bootstrapping Procedure to
@@ -130,10 +130,14 @@
 
       <t><list style="symbols">
           <t>Various network security services are provided by Enterprise
-          networks to protect endpoints (e.g,. Hosts, IoT devices). <xref
-          target="I-D.camwinget-tls-use-cases"></xref> discusses some of the
-          network-based security service use cases. These network security
-          services act on DNS requests originating from endpoints.</t>
+          networks to protect endpoints (e.g,. Hosts, IoT devices).
+          Network-based security solutions such as Firewalls (FW) and
+          Intrusion Prevention Systems (IPS) rely on network traffic
+          inspection to implement perimeter-based security policies. The
+          network security services may for example prevent malware download,
+          block known malicious URLs, enforce use of strong ciphers, stop data
+          exfiltration, etc. These network security services act on DNS
+          requests originating from endpoints.</t>
 
           <t>However, if an endpoint is configured to use public
           DNS-over-(D)TLS or DNS-over-HTTPS servers, network security services
@@ -420,7 +424,7 @@
       local network. DNS-SD defines a set of naming rules for certain DNS
       record types that they use for advertising and discovering services.
       Section 4.1 of <xref target="RFC6763"></xref> specifies that a service
-      instance name in DNS-SD has the following structure: </t>
+      instance name in DNS-SD has the following structure:</t>
 
       <figure>
         <artwork><![CDATA[<Instance> . <Service> . <Domain>]]></artwork>
@@ -438,7 +442,7 @@
       supported by the DNS server, the DNS client finds the URI template of
       the DNS-over-HTTPS server using the mechanism specified in <xref
       target="I-D.sah-resinfo-doh"></xref> to use the https URI scheme
-      (Section 3 of <xref target="RFC8484"></xref>). </t>
+      (Section 3 of <xref target="RFC8484"></xref>).</t>
     </section>
 
     <section anchor="auth" title="Connection Handshake and Service Invocation">
@@ -671,8 +675,6 @@
       <?rfc include='reference.RFC.8520'?>
 
       <?rfc include='reference.RFC.7671'?>
-
-      <?rfc include='reference.I-D.camwinget-tls-use-cases'?>
 
       <reference anchor="CDN"
                  target="https://conferences.sigcomm.org/sigcomm/2015/pdf/papers/p167.pdf">
