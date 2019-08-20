@@ -1,0 +1,694 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
+<?rfc toc="yes"?>
+<?rfc tocompact="yes"?>
+<?rfc tocdepth="3"?>
+<?rfc tocindent="yes"?>
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes"?>
+<?rfc comments="yes"?>
+<?rfc inline="yes"?>
+<?rfc compact="yes"?>
+<?rfc subcompact="no"?>
+<rfc category="std" docName="draft-reddy-dprive-bootstrap-dns-server-05"
+     ipr="trust200902">
+  <front>
+    <title abbrev="DoT/DoH server discovery">A Bootstrapping Procedure to
+    Discover and Authenticate DNS-over-(D)TLS and DNS-over-HTTPS
+    Servers</title>
+
+    <author fullname="Tirumaleswar Reddy" initials="T." surname="Reddy">
+      <organization abbrev="McAfee">McAfee, Inc.</organization>
+
+      <address>
+        <postal>
+          <street>Embassy Golf Link Business Park</street>
+
+          <city>Bangalore</city>
+
+          <region>Karnataka</region>
+
+          <code>560071</code>
+
+          <country>India</country>
+        </postal>
+
+        <email>kondtir@gmail.com</email>
+      </address>
+    </author>
+
+    <author fullname="Dan Wing" initials="D." surname="Wing">
+      <organization abbrev="Citrix">Citrix Systems, Inc.</organization>
+
+      <address>
+        <postal>
+          <street></street>
+
+          <country>USA</country>
+        </postal>
+
+        <email>dwing-ietf@fuggles.com</email>
+      </address>
+    </author>
+
+    <author fullname="Michael C. Richardson" initials="M."
+            surname="Richardson">
+      <organization>Sandelman Software Works</organization>
+
+      <address>
+        <postal>
+          <street></street>
+
+          <country>USA</country>
+        </postal>
+
+        <email>mcr+ietf@sandelman.ca</email>
+      </address>
+    </author>
+
+    <author fullname="Mohamed Boucadair" initials="M." surname="Boucadair">
+      <organization>Orange</organization>
+
+      <address>
+        <postal>
+          <street></street>
+
+          <city>Rennes</city>
+
+          <region></region>
+
+          <code>35000</code>
+
+          <country>France</country>
+        </postal>
+
+        <email>mohamed.boucadair@orange.com</email>
+      </address>
+    </author>
+
+    <date day="14" month="June" year="2019" />
+
+    <workgroup>DPRIVE WG</workgroup>
+
+    <abstract>
+      <t>This document specifies mechanisms to automatically bootstrap
+      endpoints (e.g., hosts, Customer Equipment) to discover and authenticate
+      DNS-over-(D)TLS and DNS-over-HTTPS servers provided by a local
+      network.</t>
+    </abstract>
+  </front>
+
+  <middle>
+    <section anchor="intro" title="Introduction">
+      <t>Traditionally a caching DNS server has been provided by local
+      networks. This provides benefits such as low latency to reach that DNS
+      server (owing to its network proximity to the endpoint). However, if an
+      endpoint is configured to use Internet-hosted or public DNS-over-(D)TLS
+      <xref target="RFC7858"></xref> <xref target="RFC8094"></xref> or
+      DNS-over-HTTPS <xref target="RFC8484"></xref> servers, any available
+      local DNS server cannot serve DNS requests from local endpoints. If
+      public DNS servers are used instead of using local DNS servers, some
+      operational problems can occur such as those listed below:</t>
+
+      <t><list style="symbols">
+          <t>"Split DNS" <xref target="RFC2775"></xref> to use the special
+          internal-only domain names (e.g., "internal.example.com") in
+          enterprise networks will not work, and ".local" and "home.arpa"
+          names cannot be locally resolved in home networks.</t>
+
+          <t>Content Delivery Networks (CDNs) that map traffic based on DNS
+          may lose the ability to direct end-user traffic to a nearby
+          service-specific cluster in cases where a DNS service is being used
+          that is not affiliated with the local network and which does not
+          send "EDNS Client Subnet" (ECS) information <xref
+          target="RFC7871"></xref> to the CDN's DNS authorities <xref
+          target="CDN"></xref>.</t>
+        </list></t>
+
+      <t>If public DNS servers are used instead of using local DNS servers,
+      the following discusses the impact on network-based security:</t>
+
+      <t><list style="symbols">
+          <t>Various network security services are provided by Enterprise
+          networks to protect endpoints (e.g,. Hosts, IoT devices).
+          Network-based security solutions such as Firewalls (FW) and
+          Intrusion Prevention Systems (IPS) rely on network traffic
+          inspection to implement perimeter-based security policies. The
+          network security services may for example prevent malware download,
+          block known malicious URLs, enforce use of strong ciphers, stop data
+          exfiltration, etc. These network security services act on DNS
+          requests originating from endpoints.</t>
+
+          <t>However, if an endpoint is configured to use public
+          DNS-over-(D)TLS or DNS-over-HTTPS servers, network security services
+          cannot act on DNS requests from these endpoints.</t>
+
+          <t>In order to act on DNS requests from endpoints, network security
+          services can block DNS-over-(D)TLS traffic by dropping outgoing
+          packets to destination port 853. Identifying DNS-over-HTTPS traffic
+          is far more challenging than DNS-over-(D)TLS traffic. Network
+          security services may try to identify the domains offering
+          DNS-over-HTTPS servers, and DNS-over-HTTPS traffic can be blocked by
+          dropping outgoing packets to these domains. If an endpoint has
+          enabled strict privacy profile (Section 5 of <xref
+          target="RFC8310"></xref>), and the network security service blocks
+          the traffic to the public DNS server, the DNS service won't be
+          available to the endpoint and ultimately the endpoint cannot access
+          Internet-reachable services.</t>
+
+          <t>If an endpoint has enabled opportunistic privacy profile (Section
+          5 of <xref target="RFC8310"></xref>), and the network security
+          service blocks traffic to the public DNS server, the endpoint will
+          either fallback to an encrypted connection without authenticating
+          the DNS server provided by the local network or fallback to clear
+          text DNS, and cannot exchange encrypted DNS messages.</t>
+        </list></t>
+
+      <t>If the network security service fails to block DNS-over-(D)TLS or
+      DNS-over-HTTPS traffic, this can compromise the endpoint security; some
+      of the potential security threats are listed below:</t>
+
+      <t><list style="symbols">
+          <t>The network security service cannot prevent an endpoint from
+          accessing malicious domains.</t>
+
+          <t>If the endpoint is an IoT device which is configured to use
+          public DNS-over-(D)TLS or DNS-over-HTTPS servers, and if a policy
+          enforcement point in the local network is programmed using, for
+          example, a Manufacturer Usage Description (MUD) file <xref
+          target="RFC8520"></xref> by a MUD manager to only allow intented
+          communications to and from the IoT device, the policy enforcement
+          point cannot enforce the network Access Control List (ACL) rules
+          based on domain names (Section 8 of <xref
+          target="RFC8520"></xref>).</t>
+        </list></t>
+
+      <t>If the network security service successfully blocks DNS-over-(D)TLS
+      and DNS-over-HTTPS traffic, this can still compromise the endpoint
+      security and privacy; some of the potential security threats are listed
+      below:<list style="symbols">
+          <t>Pervasive monitoring of DNS traffic.</t>
+
+          <t>An internal attacker can modify the DNS responses to re-direct
+          the client to malicious servers.</t>
+        </list></t>
+
+      <t>To overcome the above threats, this document specifies a mechanism to
+      automatically bootstrap endpoints to discover and authenticate the
+      DNS-over-(D)TLS and DNS-over-HTTPS servers provided by their local
+      network. The overall procedure can be structured into the following
+      steps:<list style="symbols">
+          <t><xref target="bootstrap-endpoint">Bootstrapping</xref> is
+          necessary only when connecting to a new network or when the
+          network's DNS certificate has changed. Bootstrapping authenticates
+          the Enrollment over Secure Transport (EST) <xref
+          target="RFC7030"></xref> server to the endpoint. After
+          authenticating the EST server, DNS server certificate used by the
+          local network is downloaded to the endpoint. This DNS server
+          certificate enables subsequent authenticated encrypted communication
+          with the local DNS server (e.g., DNS-over-HTTPS) during in the
+          connection phase.</t>
+
+          <t><xref target="discovery">Discovery</xref> is performed by a
+          previously bootstrapped endpoint whenever connecting to a network.
+          During discovery, the endpoint is instructed which privacy-enabling
+          DNS protocol(s), port number(s), and IP addresses are supported on a
+          local network. This effectively takes the place of DNS server IP
+          address traditionally provided by IPv4 or IPv6 DHCP or by <xref
+          target="RFC8106">IPv6 Router Advertisement</xref>.</t>
+
+          <t><xref target="auth">Connection handshake and service
+          invocation</xref>: The DNS client initiates a (D)TLS handshake with
+          the DNS server learned in the discovery phase, and validates the DNS
+          server's identity using the credentials obtained in the
+          bootstrapping phase.</t>
+        </list></t>
+
+      <t>Note: The strict and opportunistic privacy profiles as defined in
+      <xref target="RFC8310"></xref> only applies to DNS-over-(D)TLS
+      protocols, there has been no such distinction made for DNS-over-HTTPS
+      protocol.</t>
+    </section>
+
+    <section anchor="scope" title="Scope">
+      <t>The problems discussed in <xref target="intro"></xref> will be
+      encountered in Enterprise networks. Typically Enterprise networks do not
+      assume that all devices in their network are managed by the IT team or
+      Mobile Device Management (MDM) devices, especially in the quite common
+      BYOD ("Bring Your Own Device") scenario. The mechanisms specified in
+      this document can be used by BYOD devices to discover and authenticate
+      DNS-over-(D)TLS and DNS-over-HTTPS servers provided by the Enterprise
+      network. This mechanism can also be used by IoT devices (managed by IT
+      team) after onboarding to discover and authenticate DNS-over-(D)TLS and
+      DNS-over-HTTPS servers provided by the Enterprise network.</t>
+    </section>
+
+    <section anchor="notation" title="Terminology">
+      <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+      "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+      "OPTIONAL" in this document are to be interpreted as described in BCP 14
+      <xref target="RFC2119"></xref><xref target="RFC8174"></xref> when, and
+      only when, they appear in all capitals, as shown here.</t>
+
+      <t>(D)TLS is used for statements that apply to both Transport Layer
+      Security <xref target="RFC8446"></xref> and Datagram Transport Layer
+      Security <xref target="RFC6347"></xref>. Specific terms are used for any
+      statement that applies to either protocol alone.</t>
+
+      <t>This document uses the terms defined in <xref
+      target="RFC8499"></xref>.</t>
+    </section>
+
+    <section anchor="bootstrap-endpoint"
+             title="Bootstrapping Endpoint Devices">
+      <t>The following steps detail the mechanism to automatically bootstrap
+      an endpoint with the local network's DNS server certificate: <list
+          style="numbers">
+          <t>The endpoint authenticates to the local network and discovers the
+          Enrollment over Secure Transport (EST) <xref
+          target="RFC7030"></xref> server using the procedure discussed in
+          <xref target="EST_Discovery"></xref>.</t>
+
+          <t>The endpoint establishes provisional TLS connection with that EST
+          server, i.e., the endpoint provisionally accepts the unverified TLS
+          server certificate. However, the endpoint MUST authenticate the EST
+          server before it accepts the DNS server certificate. The endpoint
+          either uses password-based authenticated key exchange (PAKE) with
+          TLS 1.3 <xref target="I-D.barnes-tls-pake"></xref> as an
+          authentication method or uses the mutual authentication protocol for
+          HTTP <xref target="RFC8120"> </xref> to authenticate the discovered
+          EST server. <vspace blankLines="1" />As a reminder, PAKE is an
+          authentication method that allows the use of usernames and passwords
+          over unencrypted channels without revealing the passwords to an
+          eavesdropper. Similarly, the mutual authentication for HTTP is based
+          on PAKE and provides mutual authentication between an HTTP client
+          and an HTTP server using username and password as credentials. The
+          cryptographic algorithms to use with the mutual authentication
+          protocol for HTTP are defined in <xref target="RFC8121"></xref>.</t>
+
+          <t>The endpoint needs to use PAKE scheme to perform authentication
+          the first time it connects to an EST server. If the EST server
+          authentication is successful, the server's identity can be used to
+          authenticate subsequent TLS connections to that EST server. The
+          endpoint configures the reference identifier for the EST server
+          using the DNS-ID identifier type in the EST server certificate. On
+          subsequent connections to the EST server, the endpoint MUST validate
+          the EST server certificate using the Implict Trust Anchor database
+          (i.e, the EST server certificate must pass PKIX certification path
+          validation) and match the reference identifier against the EST
+          server's identity according to the rules specified in Section 6.4 of
+          <xref target="RFC6125"></xref>.</t>
+
+          <t>The endpoint learns the End-Entity certificates <xref
+          target="RFC8295"></xref> from the EST server. The certificate
+          provisioned to the DNS server in the local network will be treated
+          as a End-Entity certificate. As a reminder, the End-Entity
+          certificates must be validated by the endpoint using an authorized
+          trust anchor (Section 3.2 of <xref target="RFC8295"></xref>). The
+          endpoint needs to identify the certificate provisioned to the DNS
+          server. The SRV-ID identifier type <xref target="RFC6125"></xref>
+          within subjectAltName entry MUST be used to identify the DNS server
+          certificate. <vspace blankLines="1" />For example, DNS server
+          certificate will include SRV-ID "_domain-s.example.net" along with
+          DNS-ID "example.net". The SRV service label "domain-s" is defined in
+          Section 6 of <xref target="RFC7858"></xref>. As a reminder, the
+          protocol component is not included in the SRV-ID <xref
+          target="RFC4985"></xref>.</t>
+
+          <t>The endpoint configures the authentication domain name (ADN)
+          (defined in <xref target="RFC8310"></xref>) for the DNS server from
+          the DNS-ID identifier type within subjectAltName entry in the DNS
+          server certificate. The DNS server certificate is associated with
+          the ADN to be matched with the certificate given by the DNS server
+          in (D)TLS. To some extent, this approach is similar to certificate
+          usage PKIX-EE(1) defined in <xref target="RFC7671"></xref>.</t>
+        </list></t>
+
+      <t><xref target="fig1"></xref> illustrates a sequence diagram for
+      bootstrapping an endpoint with the local network's DNS server
+      certificate.</t>
+
+      <t><figure anchor="fig1" title="Bootstrapping Endpoint Devices">
+          <artwork align="left"><![CDATA[                                                                                                                                                                                                     
++----------+                                     +--------+  +--------+                               
+| Endpoint |                                     |  EST   |  |  DNS   |   
+|          |                                     | Server |  | Server |                     
++----------+                                     +--------+  +--------+                               
+        | DNS-SD query to discover the EST server      |          |                                         
+        |-------------------------------------------------------->|                                         
+        |                                              |          |
+        | optional: mDNS query to                      |          |
+        |  discover the EST server                     |          |
+        |--------------------------------------------->|          | 
+        |                                              |          |                                         
+        | Establish provisional TLS connection         |          |                                         
+        |<-------------------------------------------->|          |                                         
+        |                                              |          |                                         
+        | PAKE scheme to authenticate the EST server   |          | 
+        |<-------------------------------------------->|          |                                         
+        |                                              |          |                                         
+[Generate reference identifier for the EST server      |          |                                         
+ to compare with the EST server certificate            |          |
+ in subsequent TLS connections]                        |          |                           
+        |                                              |          |                                         
+        |      Get EE certificates                     |          |                                         
+        |--------------------------------------------->|          |                                         
+        |                                              |          |                                         
+[Identify the DNS server certificate in EE             |          | 
+ certificates to match with the certificate            |          |  
+ by the DNS server in (D)TLS handshake]                |          |                                          
+                                                       |          |
+[Configure ADN and associate DNS server certificate]   |          | 
+        |                                              |          |                                         
+]]></artwork>
+        </figure></t>
+    </section>
+
+    <section anchor="bootstrap-iot" title="Bootstrapping IoT Devices">
+      <t>The following steps explain the mechanism to automatically bootstrap
+      IoT devices with local network's CA certificates and DNS server
+      certificate: <list style="symbols">
+          <t>Bootstrapping Remote Secure Key Infrastructures (BRSKI) discussed
+          in <xref target="I-D.ietf-anima-bootstrapping-keyinfra"></xref>
+          provides a solution for secure automated bootstrap of devices. BRSKI
+          specifies means to provision credentials on devices to be used to
+          operationally access networks. In addition, BRSKI provides an
+          automated mechanism for the bootstrap distribution of CA
+          certificates from the EST server. The IoT device can use BRSKI to
+          automatically bootstrap the IoT device using the IoT manufacturer
+          provisioned X.509 certificate, in combination with a registrar
+          provided by the local network and IoT device manufacturer's
+          authorizing service (MASA):<list style="numbers">
+              <t>The IoT device authenticates to the local network using the
+              IoT manufacturer provisioned X.509 certificate. The IoT device
+              can request and get a voucher from the MASA service via the
+              registrar. The voucher is signed by the MASA service and
+              includes the local network's CA public key.</t>
+
+              <t>The IoT device validates the signed voucher using the
+              manufacturer installed trust anchor associated with the MASA,
+              stores the CA's public key and validates the provisional TLS
+              connection to the registrar.</t>
+
+              <t>The IoT device requests the full EST distribution of current
+              CA certificates (Section 5.9.1 in <xref
+              target="I-D.ietf-anima-bootstrapping-keyinfra"></xref>) from the
+              registrar operating as a BRSKI-EST server. The IoT devices
+              stores the CA certificates as Explicit Trust Anchor database
+              entries. The IoT device uses the Explicit Trust Anchor database
+              to validate the DNS server certificate.</t>
+
+              <t>The IoT device learns the End-Entity certificates from the
+              BRSKI-EST server. The certificate provisioned to the DNS server
+              in the local network will be treated as an End-Entity
+              certificate. The IoT device needs to identify the certificate
+              provisioned to the DNS server. The SRV-ID identifier type within
+              subjectAltName entry MUST be used to identify the DNS server
+              certificate.</t>
+
+              <t>The endpoint configures the ADN for the DNS server from the
+              DNS-ID identifier type within subjectAltName entry in the DNS
+              server certificate. The DNS server certificate is associated
+              with the ADN to be matched with the certificate given by the DNS
+              server in (D)TLS.</t>
+            </list></t>
+        </list></t>
+    </section>
+
+    <section anchor="discovery"
+             title="DNS-over-(D)TLS and DNS-over-HTTPS Server Discovery Procedure">
+      <t>A DNS client discovers the DNS server in the local network supporting
+      DNS-over-TLS, DNS-over-DTLS and DNS-over-HTTPS protocols by using
+      DNS-based Service Discovery (DNS-SD) <xref target="RFC6763"></xref>.
+      DNS-SD provides generic solution for discovering services available in a
+      local network. DNS-SD defines a set of naming rules for certain DNS
+      record types that they use for advertising and discovering services.
+      Section 4.1 of <xref target="RFC6763"></xref> specifies that a service
+      instance name in DNS-SD has the following structure:</t>
+
+      <figure>
+        <artwork><![CDATA[<Instance> . <Service> . <Domain>]]></artwork>
+      </figure>
+
+      <t></t>
+
+      <t>The &lt;Domain&gt; portion specifies the authentication domain name.
+      The &lt;Service&gt; portion of the DNS service instance name MUST be
+      "_dprive._udp" or "_dprive._tcp" or "_doh._tcp". If no DNS-SD records
+      can be retrieved, the discovery procedure fails for this authentication
+      domain name. However, before retrying a lookup that has failed, a DNS
+      client MUST wait a time period that is appropriate for the encountered
+      error (e.g., NXDOMAIN, timeout, etc.). If DNS-over-HTTPS protocol is
+      supported by the DNS server, the DNS client finds the URI template of
+      the DNS-over-HTTPS server using the mechanism specified in <xref
+      target="I-D.sah-resinfo-doh"></xref> to use the https URI scheme
+      (Section 3 of <xref target="RFC8484"></xref>).</t>
+    </section>
+
+    <section anchor="auth" title="Connection Handshake and Service Invocation">
+      <t>The DNS client initiates (D)TLS handshake with the DNS server, the
+      DNS server presents its certificate in ServerHello message, and the DNS
+      client MUST match the DNS server certificate downloaded in Step 4 in
+      <xref target="bootstrap-endpoint"></xref> or <xref
+      target="bootstrap-iot"></xref> with the certificate provided by the DNS
+      server in (D)TLS handshake. If the match is successful, the DNS client
+      MUST validate the server certificate using the Implicit Trust Anchor
+      database (i.e., the DNS server certificate must pass PKIX certification
+      path validation).</t>
+
+      <t>If the match is successful and server certificate is successfully
+      validated, the client continues with the connection as normal.
+      Otherwise, the client MUST treat the server certificate validation
+      failure as a non-recoverable error. If the DNS client cannot reach or
+      establish an authenticated and encrypted connection with the
+      privacy-enabling DNS server provided by the local network, the DNS
+      client can fallback to the privacy-enabling public DNS server.</t>
+    </section>
+
+    <section anchor="EST_Discovery" title="EST Service Discovery Procedure">
+      <t>A EST client discovers the EST server in the local network by using
+      DNS-based Service Discovery (DNS-SD) <xref target="RFC6763"></xref> or
+      Multicast DNS (mDNS) <xref target="RFC6762"></xref>. The &lt;Domain&gt;
+      portion specifies the DNS sub-domain where the service instance is
+      registered. It may be "local.", indicating the mDNS local domain, or it
+      may be a conventional domain name such as "example.com.". The
+      &lt;Service&gt; portion of the EST service instance name MUST be
+      "_est._tcp".</t>
+
+      <section title="mDNS">
+        <t>A EST client application can proactively discover an EST server
+        being advertised in the site by multicasting a PTR query to the
+        following:</t>
+
+        <t><list style="symbols">
+            <t>"_est._tcp.local"</t>
+          </list>A EST server can send out gratuitous multicast DNS answer
+        packets whenever it starts up, wakes from sleep, or detects a change
+        in EST server configuration. EST client application can receive these
+        gratuitous packets and cache information contained in them.</t>
+      </section>
+    </section>
+
+    <section anchor="reattach" title="Network Reattachment">
+      <t>On subsequent attachments to the network, the endpoint discovers the
+      privacy-enabling DNS server using the authentication domain name
+      (configured in Step 5 of <xref target="bootstrap-endpoint"></xref> or
+      <xref target="bootstrap-iot"></xref>), initiates (D)TLS handshake with
+      the DNS server and follows the mechanism discussed in <xref
+      target="auth"></xref> to validate the DNS server certificate.</t>
+
+      <t>If the DNS server certificate is invalid (e.g., revoked or expired)
+      or the procedure to discover the privacy-enabling DNS server fails (e.g.
+      the domain name of the privacy-enabling DNS server has changed because
+      the Enterprise network has switched to a public privacy-enabling DNS
+      server capable of blocking access to malicious domains), the endpoint
+      discovers and initiates TLS handshake with the EST server, and uses the
+      validation techniques described in <xref target="RFC6125"></xref> to
+      compare the reference identifier (created in Step 2 of <xref
+      target="bootstrap-endpoint"></xref> in this document) to the EST server
+      certificate and verifies the entire certification path as per <xref
+      target="RFC5280"></xref>. The endpoint then gets the DNS server
+      certificate from the EST server. If the DNS-ID identifier type within
+      subjectAltName entry in the DNS server certificate does not match the
+      configured ADN, the ADN is replaced with the DNS-ID identifier type. The
+      DNS server certificate associated with the ADN is replaced with the one
+      provided by the EST server. If the ADN has changed, the endpoint
+      discovers the privacy-enabling DNS server, initiates (D)TLS handshake
+      with the DNS server and follows the mechanism discussed in <xref
+      target="auth"></xref> to validate the DNS server certificate.</t>
+
+      <t><xref target="fig2"></xref> illustrates a sequence diagram for
+      re-configuring an endpoint with ADN and local network's DNS server
+      certificate on subsequent attachments to the network.</t>
+
+      <t><figure anchor="fig2"
+          title="Bootstrapping Endpoint Devices on subsequent attachments to the network">
+          <artwork align="left"><![CDATA[+----------+                                     +--------+  +--------+                               
+| Endpoint |                                     |  EST   |  |  DNS   |   
+|          |                                     | Server |  | Server |                     
++----------+                                     +--------+  +--------+                               
+        | DNS-SD query to discover the EST server      |          |                                         
+        |-------------------------------------------------------->|                                         
+        |                                              |          |
+        | optional: mDNS query to                      |          |
+        | discover the EST server                      |          |
+        |--------------------------------------------->|          | 
+        |                                              |          |                                         
+        | Establish TLS connection                     |          | 
+        | and validate EST server certificate          |          |
+        |<-------------------------------------------->|          |                                         
+        |                                              |          |                                         
+        |      Get EE certificates                     |          |                                         
+        |<-------------------------------------------->|          |                                         
+        |                                              |          |                                         
+[Identify the DNS server certificate in EE             |          | 
+ certificates to match with the certificate            |          |  
+ by the DNS server in (D)TLS handshake]                |          |                                          
+                                                       |          |
+[Re-configure ADN and associate DNS server certificate]|          | 
+        |                                              |          |
+
+]]></artwork>
+        </figure></t>
+    </section>
+
+    <section anchor="privacy" title="Privacy Considerations">
+      <t><xref target="RFC7626"></xref> discusses DNS privacy considerations
+      in both "on the wire" (Section 2.4 of <xref target="RFC7626"></xref>)
+      and "in the server" (Section 2.5 of <xref target="RFC7626"></xref>
+      contexts. The endpoint may not know if the DNS-over-(D)TLS or
+      DNS-over-HTTPS server in the local network has a privacy preserving data
+      policy. TODO can be used by the client to discover the privacy
+      preserving data policy of the DNS server.</t>
+    </section>
+
+    <section anchor="Security" title="Security Considerations">
+      <t>The bootstrapping procedure to obtain the certificate of the local
+      networks DNS server uses a client identity and password to authenticate
+      the EST server using PAKE schemes. Security considerations such as those
+      discussed in <xref target="I-D.barnes-tls-pake"></xref> or <xref
+      target="RFC8120"></xref> and <xref target="RFC8121"></xref> need to be
+      taken into consideration.</t>
+
+      <t>Users cannot be expected to enable or disable the bootstrapping or
+      the discovery procedure as they switch networks. Thus, it is RECOMMENDED
+      that users indicate to their system in some way that they desire
+      bootstrapping to be performed when connecting to a specific network,
+      similar to the way users disable VPN connection in specific network
+      (e.g., Enterprise network) and enable VPN connection by default in other
+      networks.</t>
+
+      <t>If an endpoint has enabled strict privacy profile, and the network
+      security service blocks the traffic to the privacy-enabling public DNS
+      server, a hard failure occurs and the user is notified. The user has a
+      choice to switch to another network or if the user trusts the network,
+      the user can enable strict privacy profile with the DNS-over-(D)TLS or
+      DNS-over-HTTPS server discovered in the network instead of downgrading
+      to opportunistic privacy profile.</t>
+
+      <t>The primary attacks against the methods described in <xref
+      target="discovery"></xref> are the ones that would lead to impersonation
+      of a DNS server and spoofing the DNS response to indicate that the DNS
+      server does not support any privacy-enabling protocols. To protect
+      against DNS-vectored attacks, secured DNS (DNSSEC) can be used to ensure
+      the validity of the DNS records received. Impersonation of the DNS
+      server is prevented by validating the certificate presented by the DNS
+      server. If the EST server conveys the DNS server certificate, but the
+      DNS-SD lookup indicates that the DNS server does not support any
+      privacy-enabling protocols, the client can detect the DNS response is
+      spoofed.</t>
+
+      <t>Security considerations in <xref
+      target="I-D.ietf-anima-bootstrapping-keyinfra"></xref> need to be taken
+      into consideration for IoT devices.</t>
+    </section>
+
+    <section anchor="IANA" title="IANA Considerations">
+      <t>IANA is requested to allocate the SRV service name of "dprive" for
+      DNS-over-TLS or DNS-over-DTLS, and the service name of "doh" for
+      DNS-over-HTTPS.</t>
+
+      <t>IANA is requested to allocate the SRV service name of "est".</t>
+    </section>
+
+    <section anchor="acknowledgments" title="Acknowledgments">
+      <t>Thanks to Joe Hildebrand, Harsha Joshi, Shashank Jain, Patrick
+      McManus, Bob Harold, Livingood Jason, Winfield Alister, Eliot Lear and
+      Sara Dickinson for the discussion and comments.</t>
+    </section>
+  </middle>
+
+  <back>
+    <references title="Normative References">
+      <?rfc include="reference.RFC.2119"?>
+
+      <?rfc include='reference.RFC.8174'?>
+
+      <?rfc include="reference.RFC.6125"?>
+
+      <?rfc include="reference.RFC.7030"?>
+
+      <?rfc include="reference.RFC.8295"?>
+
+      <?rfc include="reference.RFC.8484"?>
+
+      <?rfc include="reference.RFC.7858"?>
+
+      <?rfc include="reference.RFC.8094"?>
+
+      <?rfc include="reference.RFC.6763"?>
+
+      <?rfc include="reference.RFC.8499"?>
+
+      <?rfc include="reference.RFC.8446"?>
+
+      <?rfc include="reference.RFC.6347"?>
+
+      <?rfc include="reference.RFC.4985"?>
+
+      <?rfc include="reference.RFC.8121"?>
+
+      <?rfc include="reference.RFC.6762"?>
+
+      <?rfc include="reference.RFC.5280"?>
+    </references>
+
+    <references title="Informative References">
+      <?rfc include="reference.RFC.8310"?>
+
+      <?rfc include="reference.RFC.8120"?>
+
+      <?rfc include='reference.I-D.barnes-tls-pake'?>
+
+      <?rfc include='reference.I-D.ietf-anima-bootstrapping-keyinfra'?>
+
+      <?rfc include='reference.I-D.sah-resinfo-doh'?>
+
+      <?rfc include="reference.RFC.2775"?>
+
+      <?rfc include="reference.RFC.8106"?>
+
+      <?rfc include="reference.RFC.7871"?>
+
+      <?rfc include="reference.RFC.7626"?>
+
+      <?rfc include='reference.RFC.8520'?>
+
+      <?rfc include='reference.RFC.7671'?>
+
+      <reference anchor="CDN"
+                 target="https://conferences.sigcomm.org/sigcomm/2015/pdf/papers/p167.pdf">
+        <front>
+          <title>End-User Mapping: Next Generation Request Routing for Content
+          Delivery</title>
+
+          <author>
+            <organization></organization>
+          </author>
+
+          <date year="2015" />
+        </front>
+      </reference>
+    </references>
+  </back>
+</rfc>
