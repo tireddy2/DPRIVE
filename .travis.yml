@@ -1,12 +1,32 @@
-dist: trusty
-sudo: false
 language: python
-python:
-  - "3.6"
+sudo: false
+dist: xenial
 
-before_install:
-  - "pip install xml2rfc pyang"
-  - "gem install kramdown-rfc2629"
-  - "export PATH=$HOME/.local/bin:$PATH."
+addons:
+  apt:
+    packages:
+     - python-pip
+     - xsltproc
 
-script: "make"
+env:
+  global:
+   - GOPATH="${TRAVIS_BUILD_DIR}/.go_workspace"
+   - mmark_src=github.com/miekg/mmark/mmark
+   - mmark=./mmark
+
+install:
+ - pip install xml2rfc
+ - if head -1 -q *.md | grep '^\-\-\-' >/dev/null 2>&1; then gem install --no-doc kramdown-rfc2629; fi
+ - if head -1 -q *.md | grep '^%%%' >/dev/null 2>&1; then go get "$mmark_src" && go build "$mmark_src"; fi
+
+script:
+ - make
+ - make issues || make issues DISABLE_ISSUE_FETCH=true && make gh-issues
+ - make gh-pages
+
+deploy:
+  provider: script
+  script: make upload
+  skip_cleanup: true
+  on:
+    tags: true

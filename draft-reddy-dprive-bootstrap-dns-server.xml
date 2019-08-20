@@ -10,7 +10,7 @@
 <?rfc inline="yes"?>
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
-<rfc category="std" docName="draft-reddy-dprive-bootstrap-dns-server-04"
+<rfc category="std" docName="draft-reddy-dprive-bootstrap-dns-server-latest"
      ipr="trust200902">
   <front>
     <title abbrev="DoT/DoH server discovery">A Bootstrapping Procedure to
@@ -86,7 +86,7 @@
       </address>
     </author>
 
-    <date day="7" month="May" year="2019" />
+    <date day="14" month="June" year="2019" />
 
     <workgroup>DPRIVE WG</workgroup>
 
@@ -137,7 +137,7 @@
 
           <t>However, if an endpoint is configured to use public
           DNS-over-(D)TLS or DNS-over-HTTPS servers, network security services
-          cannot act efficiently on DNS requests from these endpoints.</t>
+          cannot act on DNS requests from these endpoints.</t>
 
           <t>In order to act on DNS requests from endpoints, network security
           services can block DNS-over-(D)TLS traffic by dropping outgoing
@@ -413,63 +413,32 @@
 
     <section anchor="discovery"
              title="DNS-over-(D)TLS and DNS-over-HTTPS Server Discovery Procedure">
-      <t>This specification defines "DPRIVE" as the application service tag
-      (<xref target="serviceT"></xref>) and "dns.tls" (<xref
-      target="dnstls"></xref>), "dns.dtls" (<xref target="dnsdtls"></xref>),
-      and "dns.https" (<xref target="dnshttps"></xref>) as application
-      protocol tags. A DNS client discovers the DNS server in the local
-      network supporting DNS-over-TLS, DNS-over-DTLS and DNS-over-HTTPS
-      protocols by using the following discovery mechanism:</t>
+      <t>A DNS client discovers the DNS server in the local network supporting
+      DNS-over-TLS, DNS-over-DTLS and DNS-over-HTTPS protocols by using
+      DNS-based Service Discovery (DNS-SD) <xref target="RFC6763"></xref>.
+      DNS-SD provides generic solution for discovering services available in a
+      local network. DNS-SD defines a set of naming rules for certain DNS
+      record types that they use for advertising and discovering services.
+      Section 4.1 of <xref target="RFC6763"></xref> specifies that a service
+      instance name in DNS-SD has the following structure: </t>
 
-      <t><list style="symbols">
-          <t>The DNS client makes an S-NAPTR <xref target="RFC3958"></xref>
-          lookup with the authentication domain name and the 'DPRIVE'
-          application service tag to learn the protocols DNS-over-TLS,
-          DNS-over-DTLS, and DNS-over-HTTPS supported by the DNS server and
-          the DNS privacy protocol preferred by the DNS server administrators.
-          The S-NAPTR lookup is performed using an recursive DNS resolver
-          discovered from an untrusted source (such as DHCP).</t>
+      <figure>
+        <artwork><![CDATA[<Instance> . <Service> . <Domain>]]></artwork>
+      </figure>
 
-          <t>In the example depicted in <xref
-          target="fig-naptr-lookup"></xref>, for authentication domain name
-          'example.net', the resolution algorithm will result in the
-          privacy-enabling protocols supported by the DNS server and usable
-          DNS server IP addresses and port numbers.<figure
-              anchor="fig-naptr-lookup">
-              <artwork><![CDATA[   example.net.
-   IN NAPTR 100 10 "" DPRIVE:dns.tls  "" dns1.example.net.
-   IN NAPTR 200 10 "" DPRIVE:dns.dtls "" dns2.example.net.
+      <t></t>
 
-   dns1.example.net.
-   IN NAPTR 100 10 S DPRIVE:dns.tls "" _domain-s._tcp.example.net.
-
-   dns2.example.net.
-   IN NAPTR 100 10 S DPRIVE:dns.dtls "" _domain-s._udp.example.net.
-
-   _domain-s._tcp.example.net.
-   IN SRV   0 0 853 a.example.net.
-
-   _domain-s._udp.example.net.
-   IN SRV   0 0 853 a.example.net.
-
-   a.example.net.
-   IN A        192.0.2.1
-   IN AAAA     2001:db8:8:4::2
-]]></artwork>
-            </figure></t>
-
-          <t>If DNS-over-HTTPS protocol is supported by the DNS server, the
-          DNS client finds the URI template of the DNS-over-HTTPS server using
-          one of the mechanisms discussed in <xref
-          target="I-D.ietf-doh-resolver-associated-doh"> </xref> to use the
-          https URI scheme (Section 3 of <xref target="RFC8484"></xref>).</t>
-
-          <t>If no DNS-specific S-NAPTR records can be retrieved, the
-          discovery procedure fails for this authentication domain name.
-          However, before retrying a lookup that has failed, a DNS client MUST
-          wait a time period that is appropriate for the encountered error
-          (e.g., NXDOMAIN, timeout, etc.).</t>
-        </list></t>
+      <t>The &lt;Domain&gt; portion specifies the authentication domain name.
+      The &lt;Service&gt; portion of the DNS service instance name MUST be
+      "_dprive._udp" or "_dprive._tcp" or "_doh._tcp". If no DNS-SD records
+      can be retrieved, the discovery procedure fails for this authentication
+      domain name. However, before retrying a lookup that has failed, a DNS
+      client MUST wait a time period that is appropriate for the encountered
+      error (e.g., NXDOMAIN, timeout, etc.). If DNS-over-HTTPS protocol is
+      supported by the DNS server, the DNS client finds the URI template of
+      the DNS-over-HTTPS server using the mechanism specified in <xref
+      target="I-D.sah-resinfo-doh"></xref> to use the https URI scheme
+      (Section 3 of <xref target="RFC8484"></xref>). </t>
     </section>
 
     <section anchor="auth" title="Connection Handshake and Service Invocation">
@@ -493,22 +462,14 @@
     </section>
 
     <section anchor="EST_Discovery" title="EST Service Discovery Procedure">
-      <t>DNS-based Service Discovery (DNS-SD) <xref target="RFC6763"></xref>
-      and Multicast DNS (mDNS) <xref target="RFC6762"></xref> provide generic
-      solutions for discovering services available in a local network.
-      DNS-SD/mDNS define a set of naming rules for certain DNS record types
-      that they use for advertising and discovering services.</t>
-
-      <t>Section 4.1 of <xref target="RFC6763"></xref> specifies that a
-      service instance name in DNS-SD has the following structure:</t>
-
-      <t>&lt;Instance&gt; . &lt;Service&gt; . &lt;Domain&gt;</t>
-
-      <t>The &lt;Domain&gt; portion specifies the DNS sub-domain where the
-      service instance is registered. It may be "local.", indicating the mDNS
-      local domain, or it may be a conventional domain name such as
-      "example.com.". The &lt;Service&gt; portion of the EST service instance
-      name MUST be "_est._tcp".</t>
+      <t>A EST client discovers the EST server in the local network by using
+      DNS-based Service Discovery (DNS-SD) <xref target="RFC6763"></xref> or
+      Multicast DNS (mDNS) <xref target="RFC6762"></xref>. The &lt;Domain&gt;
+      portion specifies the DNS sub-domain where the service instance is
+      registered. It may be "local.", indicating the mDNS local domain, or it
+      may be a conventional domain name such as "example.com.". The
+      &lt;Service&gt; portion of the EST service instance name MUST be
+      "_est._tcp".</t>
 
       <section title="mDNS">
         <t>A EST client application can proactively discover an EST server
@@ -593,144 +554,8 @@
       and "in the server" (Section 2.5 of <xref target="RFC7626"></xref>
       contexts. The endpoint may not know if the DNS-over-(D)TLS or
       DNS-over-HTTPS server in the local network has a privacy preserving data
-      policy. A new privacy certificate extension is defined that identifies
-      the privacy preserving data policy of the DNS server.</t>
-
-      <section title="Privacy Extension Format">
-        <t>Like all X.509 certificate extensions, the privacy certificate
-        extension is defined using ASN.1 <xref target="ASN1-88"></xref>. The
-        non-critical privacy extension is identified by id-pe-privacy.</t>
-
-        <t><figure>
-            <artwork><![CDATA[   PKIX Object Identifier Registry
-
-   id-pkix OBJECT IDENTIFIER ::= { iso(1) identified-organization(3)
-              dod(6) internet(1) security(5) mechanisms(5) pkix(7) }
-
-   PKIX Arcs
-   id-mod  OBJECT IDENTIFIER ::= { id-pkix 0 }    -- modules
-   id-pe   OBJECT IDENTIFIER ::= { id-pkix 1 }    -- private
-   certificate extensions
-
-   PKIX modules
-   id-mod-privacy-extn         OBJECT IDENTIFIER ::= { id-mod TBD2 }
-   id-pe-privacy OBJECT IDENTIFIER  ::=  { id-pe TBD1 }
-]]></artwork>
-          </figure></t>
-
-        <t>A non-null privacy always includes a base privacy. The privacy
-        extension includes the following information:<list style="symbols">
-            <t>If the client IP address is Personally Identifiable Information
-            (PII) data or non PII-data. </t>
-
-            <t>If the user identity that sent the DNS query is logged or not,
-            and if user identity address is indeed logged, the period for
-            which the user identity is logged. User identity such as username,
-            IP address, MAC address or personally identifiable data. Logging
-            duration is represented in hours. A negative one (-1) of logging
-            duration indicates indefinite duration.</t>
-
-            <t>If the transaction data (e.g., DNS messages) is logged or not,
-            and if transaction data is logged, the period for which the
-            transaction data is stored. </t>
-
-            <t>If the transaction data is logged to notify the user access to
-            certain domains (e.g., malicious domains) is blocked, the period
-            for which the transaction data is stored. If access to malicious
-            domains is logged, the period for which the transaction data is
-            stored. If the transaction data is logged for analytics (e.g. to
-            detect malicious domains), the period for which the transaction
-            data is stored.</t>
-
-            <t>If the transaction data is shared with partners or not, and if
-            the transaction data is shared with partners, the names of the
-            partners. If anonymized data or client identifiable data is shared
-            with partners.</t>
-
-            <t>If the transaction data is shared or sold to third parties.</t>
-
-            <t>If the DNS server will block DNS resolution of certain domains
-            (e.g., malicious domains).</t>
-
-            <t>A URL that points to the privacy preserving data policy, and a
-            URL that points to the security assessment report of the DNS
-            server by a third party auditor.</t>
-          </list></t>
-      </section>
-
-      <section title="Privacy Extension Syntax">
-        <t>The syntax for the privacy extension is as follows:</t>
-
-        <t><figure>
-            <artwork><![CDATA[   Privacy ::=  CHOICE  {
-     none                 NULL,             
-                          -- No privacy policy provided
-     pPolicy              PrivacyPolicy 
-                          -- Privacy preserving data policy  }  
-                          
-
-   PrivacyPolicy ::=  SEQUENCE  {
-     base              PrivacyInfo,
-     pURL         [0]  PrivacyURL OPTIONAL,
-     aURL         [1]  AuditURL OPTIONAL  }
-
-  PrivacyInfo  ::=  SEQUENCE  {
-    ipaddresspii      BOOLEAN,  
-                      -- TRUE means client IP address is PII
-    log          [0]  Logging, 
-    sdata        [2]  ShareData,
-    transferdata [3]  BOOLEAN,  
-                      -- TRUE means share or sell data to third parties
-    blockdomains [4]  BOOLEAN   
-                      -- TRUE means domains will be blocked  }
-
-   LoggingTypes  ::=  BIT STRING {
-     none           (0), 
-             -- No logging
-     all            (1),
-             -- Log all transaction data 
-     useridentity   (2),
-             -- Log user identity (e.g., username, IP address) 
-     notifyuser     (3),
-             -- Log to notify user access 
-             -- to certain domains is blocked
-     knownmalware   (4),
-             -- Log access to malicious domains
-     analytics      (5)  
-             -- Log transaction data for analytics 
-             -- (e.g. to detect malicious domains) }
-    
-   LoggingDuration ::=  SEQUENCE {
-        all          [0]   INTEGER OPTIONAL,
-                          -- Number of Hours the
-                          -- transcation data is stored
-        useridentity [1]  INTEGER OPTIONAL, 
-        notifyuser   [2]  INTEGER OPTIONAL,
-        knownmalware [3]  INTEGER OPTIONAL,
-        analytics    [4]  INTEGER OPTIONAL }
-
-   Logging ::=  SEQUENCE  {
-     loggingTypes         LoggingTypes DEFAULT {none},
-     loggingDuration      LoggingDuration OPTIONAL   
-                          -- Transaction data is cleared 
-                          -- after logging duration,
-                          -- Negative one (-1) indicates indefinite 
-                          -- duration  }
-
-   ShareData ::=  SEQUENCE  {
-     sharepartners        BOOLEAN, 
-                          -- TRUE means data is shared with partners
-     partners        [1]  SEQUENCE SIZE (1..MAX) OF UTF8String OPTIONAL, 
-                          -- Names of the partners
-     anonymizeddata  [0]  BOOLEAN OPTIONAL 
-                          -- TRUE means anonymized data 
-                          -- is shared with partners  }
- 
-   PrivacyURL  ::=  IA5String  -- MUST use https scheme
-   AuditURL    ::=  IA5String  -- MUST use https scheme
-]]></artwork>
-          </figure></t>
-      </section>
+      policy. TODO can be used by the client to discover the privacy
+      preserving data policy of the DNS server.</t>
     </section>
 
     <section anchor="Security" title="Security Considerations">
@@ -765,7 +590,7 @@
       the validity of the DNS records received. Impersonation of the DNS
       server is prevented by validating the certificate presented by the DNS
       server. If the EST server conveys the DNS server certificate, but the
-      S-NAPTR lookup indicates that the DNS server does not support any
+      DNS-SD lookup indicates that the DNS server does not support any
       privacy-enabling protocols, the client can detect the DNS response is
       spoofed.</t>
 
@@ -775,106 +600,17 @@
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
+      <t>IANA is requested to allocate the SRV service name of "dprive" for
+      DNS-over-TLS or DNS-over-DTLS, and the service name of "doh" for
+      DNS-over-HTTPS.</t>
+
       <t>IANA is requested to allocate the SRV service name of "est".</t>
-
-      <t>IANA is requested to add the following entry in the "SMI Security for
-      PKIX Certificate Extension" (1.3.6.1.5.5.7.1) registry:</t>
-
-      <t><figure>
-          <preamble></preamble>
-
-          <artwork><![CDATA[   Decimal  Description                     References
-   -------  ------------------------------  ---------------------
-
-     TBD1     id-pe-privacy                   this document 
-]]></artwork>
-
-          <postamble></postamble>
-        </figure></t>
-
-      <t>IANA is requested to add the following entry in the "SMI Security for
-      PKIX Module Identifier" (1.3.6.1.5.5.7.0) registry:</t>
-
-      <t><figure>
-          <preamble></preamble>
-
-          <artwork><![CDATA[   Decimal  Description                     References
-   -------  ------------------------------  ---------------------
-
-     TBD2     id-mod-privacy-extn           this document 
-]]></artwork>
-
-          <postamble></postamble>
-        </figure></t>
-
-      <section anchor="tag"
-               title="Application Service &amp; Application Protocol Tags">
-        <t>This document requests IANA to make the following allocations from
-        the registry available at:
-        https://www.iana.org/assignments/s-naptr-parameters/s-naptr-parameters.xhtml.</t>
-
-        <section anchor="serviceT"
-                 title="DNS Application Service Tag Registration">
-          <t><list style="symbols">
-              <t>Application Protocol Tag: DPRIVE</t>
-
-              <t>Intended Usage: See <xref target="discovery"></xref></t>
-
-              <t>Security Considerations: See <xref
-              target="Security"></xref></t>
-
-              <t>Contact Information: &lt;one of the authors&gt;</t>
-            </list></t>
-        </section>
-
-        <section anchor="dnstls"
-                 title="dns.tls Application Protocol Tag Registration">
-          <t><list style="symbols">
-              <t>Application Protocol Tag: dns.tls</t>
-
-              <t>Intended Usage: See <xref target="discovery"></xref></t>
-
-              <t>Security Considerations: See <xref
-              target="Security"></xref></t>
-
-              <t>Contact Information: &lt;one of the authors&gt;</t>
-            </list></t>
-        </section>
-
-        <section anchor="dnsdtls"
-                 title="dns.dtls Application Protocol Tag Registration">
-          <t><list style="symbols">
-              <t>Application Protocol Tag: dns.dtls</t>
-
-              <t>Intended Usage: See <xref target="discovery"></xref></t>
-
-              <t>Security Considerations: See <xref
-              target="Security"></xref></t>
-
-              <t>Contact Information: &lt;one of the authors&gt;</t>
-            </list></t>
-        </section>
-
-        <section anchor="dnshttps"
-                 title="dns.https Application Protocol Tag Registration">
-          <t><list style="symbols">
-              <t>Application Protocol Tag: dnshttps</t>
-
-              <t>Intended Usage: See <xref target="discovery"></xref></t>
-
-              <t>Security Considerations: See <xref
-              target="Security"></xref></t>
-
-              <t>Contact Information: &lt;one of the authors&gt;</t>
-            </list></t>
-        </section>
-      </section>
     </section>
 
     <section anchor="acknowledgments" title="Acknowledgments">
       <t>Thanks to Joe Hildebrand, Harsha Joshi, Shashank Jain, Patrick
-      McManus, Bob Harold, Livingood Jason, Eliot Lear and Sara Dickinson for
-      the discussion and comments.</t>
+      McManus, Bob Harold, Livingood Jason, Winfield Alister, Eliot Lear and
+      Sara Dickinson for the discussion and comments.</t>
     </section>
   </middle>
 
@@ -896,8 +632,6 @@
 
       <?rfc include="reference.RFC.8094"?>
 
-      <?rfc include="reference.RFC.3958"?>
-
       <?rfc include="reference.RFC.6763"?>
 
       <?rfc include="reference.RFC.8499"?>
@@ -913,8 +647,6 @@
       <?rfc include="reference.RFC.6762"?>
 
       <?rfc include="reference.RFC.5280"?>
-
-      <?rfc include='reference.I-D.ietf-doh-resolver-associated-doh'?>
     </references>
 
     <references title="Informative References">
@@ -925,6 +657,8 @@
       <?rfc include='reference.I-D.barnes-tls-pake'?>
 
       <?rfc include='reference.I-D.ietf-anima-bootstrapping-keyinfra'?>
+
+      <?rfc include='reference.I-D.sah-resinfo-doh'?>
 
       <?rfc include="reference.RFC.2775"?>
 
@@ -951,20 +685,6 @@
           </author>
 
           <date year="2015" />
-        </front>
-      </reference>
-
-      <reference anchor="ASN1-88" target="">
-        <front>
-          <title>International Telephone and Telegraph Consultative Committee,
-          "Specification of Abstract Syntax Notation One (ASN.1)", CCITT
-          Recommendation X.208, 1988.</title>
-
-          <author>
-            <organization></organization>
-          </author>
-
-          <date year="" />
         </front>
       </reference>
     </references>
