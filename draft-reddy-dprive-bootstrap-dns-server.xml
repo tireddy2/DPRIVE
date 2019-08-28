@@ -438,11 +438,21 @@
       can be retrieved, the discovery procedure fails for this authentication
       domain name. However, before retrying a lookup that has failed, a DNS
       client MUST wait a time period that is appropriate for the encountered
-      error (e.g., NXDOMAIN, timeout, etc.). If DNS-over-HTTPS protocol is
-      supported by the DNS server, the DNS client finds the URI template of
-      the DNS-over-HTTPS server using the mechanism specified in <xref
-      target="I-D.sah-resinfo-doh"></xref> to use the https URI scheme
-      (Section 3 of <xref target="RFC8484"></xref>).</t>
+      error (e.g., NXDOMAIN, timeout, etc.). If no DNS-SD records can be
+      retrieved, the client can try connecting to the pre-configured public
+      DNS servers. If the endpoint has enabled strict privacy profile and
+      access to the pre-configured public DNS servers is blocked, the DNS
+      service won't be available to the endpoint and ultimately the endpoint
+      cannot access Internet-reachable services. If the endpoint has enabled
+      opportunistic privacy profile and access to the pre-configured public
+      DNS servers is blocked, the endpoint will either fallback to an
+      encrypted connection without authenticating the DNS server provided by
+      the local network or fallback to clear text DNS.</t>
+
+      <t>If DNS-over-HTTPS protocol is supported by the DNS server, the DNS
+      client finds the URI template of the DNS-over-HTTPS server using the
+      mechanism specified in <xref target="I-D.sah-resinfo-doh"></xref> to use
+      the https URI scheme (Section 3 of <xref target="RFC8484"></xref>).</t>
     </section>
 
     <section anchor="auth" title="Connection Handshake and Service Invocation">

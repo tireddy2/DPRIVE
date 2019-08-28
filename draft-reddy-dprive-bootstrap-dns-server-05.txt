@@ -74,7 +74,7 @@ Table of Contents
    6.  DNS-over-(D)TLS and DNS-over-HTTPS Server Discovery Procedure   8
    7.  Connection Handshake and Service Invocation . . . . . . . . .   9
    8.  EST Service Discovery Procedure . . . . . . . . . . . . . . .   9
-     8.1.  mDNS  . . . . . . . . . . . . . . . . . . . . . . . . . .   9
+     8.1.  mDNS  . . . . . . . . . . . . . . . . . . . . . . . . . .  10
    9.  Network Reattachment  . . . . . . . . . . . . . . . . . . . .  10
    10. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  11
    11. Security Considerations . . . . . . . . . . . . . . . . . . .  11
@@ -456,9 +456,20 @@ Internet-Draft          DoT/DoH server discovery               June 2019
    records can be retrieved, the discovery procedure fails for this
    authentication domain name.  However, before retrying a lookup that
    has failed, a DNS client MUST wait a time period that is appropriate
-   for the encountered error (e.g., NXDOMAIN, timeout, etc.).  If DNS-
-   over-HTTPS protocol is supported by the DNS server, the DNS client
-   finds the URI template of the DNS-over-HTTPS server using the
+   for the encountered error (e.g., NXDOMAIN, timeout, etc.).  If no
+   DNS-SD records can be retrieved, the client can try connecting to the
+   pre-configured public DNS servers.  If the endpoint has enabled
+   strict privacy profile and access to the pre-configured public DNS
+   servers is blocked, the DNS service won't be available to the
+   endpoint and ultimately the endpoint cannot access Internet-reachable
+   services.  If the endpoint has enabled opportunistic privacy profile
+   and access to the pre-configured public DNS servers is blocked, the
+   endpoint will either fallback to an encrypted connection without
+   authenticating the DNS server provided by the local network or
+   fallback to clear text DNS.
+
+   If DNS-over-HTTPS protocol is supported by the DNS server, the DNS
+   client finds the URI template of the DNS-over-HTTPS server using the
    mechanism specified in [I-D.sah-resinfo-doh] to use the https URI
    scheme (Section 3 of [RFC8484]).
 
@@ -487,6 +498,14 @@ Internet-Draft          DoT/DoH server discovery               June 2019
    DNS-based Service Discovery (DNS-SD) [RFC6763] or Multicast DNS
    (mDNS) [RFC6762].  The <Domain> portion specifies the DNS sub-domain
    where the service instance is registered.  It may be "local.",
+
+
+
+Reddy, et al.           Expires December 16, 2019               [Page 9]
+
+Internet-Draft          DoT/DoH server discovery               June 2019
+
+
    indicating the mDNS local domain, or it may be a conventional domain
    name such as "example.com.".  The <Service> portion of the EST
    service instance name MUST be "_est._tcp".
@@ -497,14 +516,6 @@ Internet-Draft          DoT/DoH server discovery               June 2019
    advertised in the site by multicasting a PTR query to the following:
 
    o  "_est._tcp.local"
-
-
-
-
-Reddy, et al.           Expires December 16, 2019               [Page 9]
-
-Internet-Draft          DoT/DoH server discovery               June 2019
-
 
    A EST server can send out gratuitous multicast DNS answer packets
    whenever it starts up, wakes from sleep, or detects a change in EST
@@ -542,17 +553,6 @@ Internet-Draft          DoT/DoH server discovery               June 2019
    Figure 2 illustrates a sequence diagram for re-configuring an
    endpoint with ADN and local network's DNS server certificate on
    subsequent attachments to the network.
-
-
-
-
-
-
-
-
-
-
-
 
 
 
