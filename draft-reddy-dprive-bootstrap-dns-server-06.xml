@@ -241,8 +241,32 @@
       this document can be used by BYOD devices to discover and authenticate
       DNS-over-(D)TLS and DNS-over-HTTPS servers provided by the Enterprise
       network. This mechanism can also be used by IoT devices (managed by IT
-      team) after onboarding to discover and authenticate DNS-over-(D)TLS and
+      team) after onboarding to discover and authenticate DNS- over-(D)TLS and
       DNS-over-HTTPS servers provided by the Enterprise network.</t>
+
+      <t>WiFi as frequently deployed is vulnerable to various attacks (<xref
+      target="Evil-Twin"></xref>,<xref target="Krack"> </xref> and <xref
+      target="Dragonblood"></xref>). Because of these attacks, only
+      cryptographically authenticated communications are trusted on WiFi
+      networks. This means information provided by the network via DHCPv4,
+      DHCPv6, or RA (e.g., NTP server, DNS server, default domain) are
+      un-trusted because DHCP and RA are not authenticated.</t>
+
+      <t>The users have to indicate to their system in some way that they
+      desire bootstrapping to be performed only when connecting to a specific
+      network (e.g., organization for which a user works or a user works
+      temporarily within another corporation), similar to the way users
+      disable VPN connection in specific network (e.g., Enterprise network)
+      and enable VPN connection by default in other networks. If the
+      discovered DNS server meets the privacy preserving data policy
+      requirements of the user, the user can select to use the discovered
+      DNS-over-(D)TLS and DNS-over-HTTPS servers. In addition, if the
+      discovered DNS-over-(D)TLS and DNS-over-HTTPS servers are reachable on
+      the Internet, user can inform the system to use the servers in other
+      networks. It is strongly recommended to configure the DNS server to be
+      used in other networks provided the DNS server meets the privacy
+      preserving data policy requirements of the user and offers malware
+      filtering service. </t>
 
       <t>If the device joins a public WiFi without any security credential
       verification or joins a WiFi using a single shared password among all
@@ -254,13 +278,13 @@
       shared password) stored in the device. Such networks can also be
       misconfigured or malicious. Further, the client cannot know if the
       discovered DNS-over-HTTPS or DNS-over-(D)TLS server is hosted by the
-      network operator or by an attacker. This specification does not cater to
-      such networks. The user has to indicate to their system in some way that
-      they desire bootstrapping to be performed when connecting to a specific
-      network (e.g., organization for which a user works or a user works
-      temporarily within another corporation), similar to the way users
-      disable VPN connection in specific network (e.g., Enterprise network)
-      and enable VPN connection by default in other networks.</t>
+      network operator or by an attacker. In such networks, DNS-over-HTTPS and
+      DNS-over-(D)TLS server discovered using insecure discovery mechanisms
+      like DHCP can be used by the client if and only if the insecurely
+      discovered DNS-over-HTTPS and DNS-over-(D)TLS server is previously
+      securely discovered in a different network, offers malware filtering
+      service, meets the privacy preserving data policy requirements of the
+      user and configured to be used in other networks.</t>
     </section>
 
     <section anchor="notation" title="Terminology">
@@ -717,6 +741,45 @@
           </author>
 
           <date year="2015" />
+        </front>
+      </reference>
+
+      <reference anchor="Evil-Twin"
+                 target="https://en.wikipedia.org/wiki/Evil_twin_(wireless_networks)">
+        <front>
+          <title>Evil twin (wireless networks)</title>
+
+          <author>
+            <organization>The Unicode Consortium</organization>
+          </author>
+
+          <date day="" month="" year="" />
+        </front>
+      </reference>
+
+      <reference anchor="Krack" target="https://www.krackattacks.com/">
+        <front>
+          <title>Key Reinstallation Attacks</title>
+
+          <author>
+            <organization>The Unicode Consortium</organization>
+          </author>
+
+          <date day="" month="" year="2017" />
+        </front>
+      </reference>
+
+      <reference anchor="Dragonblood"
+                 target="https://papers.mathyvanhoef.com/dragonblood.pdf">
+        <front>
+          <title>Dragonblood: Analyzing the Dragonfly Handshake of WPA3 and
+          EAP-pwd</title>
+
+          <author>
+            <organization>The Unicode Consortium</organization>
+          </author>
+
+          <date day="" month="" year="" />
         </front>
       </reference>
     </references>
